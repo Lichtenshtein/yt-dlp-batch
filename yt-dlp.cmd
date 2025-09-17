@@ -1,6 +1,7 @@
 :: yt-dlp.cmd [url[.txt]] [...]
 :: v0.1 2021/01/09 CirothUngol
-:: 
+:: https://www.reddit.com/r/youtubedl/comments/kws98p/simple_batchfile_for_using_youtubedlexe_with
+::
 :: for drag'n'drop function any combination of URLs
 :: and text files may be used. text files are found 
 :: and processed first, then all URLs.
@@ -2438,4 +2439,5 @@ ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 3 >nul
 EXIT /B 0
+
 )
