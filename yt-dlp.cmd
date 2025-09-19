@@ -11,6 +11,9 @@
 :: to convert comments to readable HTML python needs to be installed
 :: then you may also need to install "pip install json2html"
 
+:: recomended ffmpeg static build with nonfree codecs
+:: https://github.com/AnimMouse/ffmpeg-stable-autobuild
+
 @ECHO OFF
 
 :: register --postprocessor-args exe locations to system PATH
@@ -525,7 +528,7 @@ GOTO :doYTDL-quick
 ) ELSE (
 ECHO   %Red-s%•%ColorOff%  Nothing to Retry. & GOTO :continue
 ))))))))))
-IF "%choice%"=="3" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET DownloadLinks=& SET AudioQuality=& SET CustomPreset=& SET VideoResolution=& SET VideoFPS=& SET CustomFormat=& SET StreamAudioFormat=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& GOTO :start
+IF "%choice%"=="3" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET DownloadLinks=& SET AudioQuality=& SET CustomPreset=& SET VideoResolution=& SET VideoFPS=& SET CustomFormat=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET CustomFormat-aac=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& GOTO :start
 IF "%choice%"=="e" GOTO :getURL-re-enter
 REM IF "%choice%"=="w" GOTO :aria
 IF "%choice%"=="q" GOTO :exit
@@ -627,6 +630,7 @@ GOTO :continue
 
 :select-format-audio
 cls
+SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET CustomFormat-aac=& SET CustomFormat-opus=
 SET Downloaded-Audio=
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Blue-s%•%ColorOff%  AUDIO FORMAT
@@ -637,9 +641,9 @@ ECHO   3. opus
 ECHO   4. aac
 ECHO   5. ogg
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   6. m4a (Best Audio)	 9. m4a + Filter/vbr5	12. m4a + Filter/vbr0
-ECHO   7. mp3 (Best Audio)	10. opus + Filter
-ECHO   8. aac (Best Audio)	11. aac + Filter
+ECHO   6. m4a (ba/acodec)	 9. m4a + Filter/vbr	12. m4a + Filter/vbr/cutoff+20k
+ECHO   7. mp3 (ba/acodec)	10. opus + Filter
+ECHO   8. aac (ba/acodec)	11. aac + Filter
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   w. Go Back
 ECHO   q. Exit
@@ -653,10 +657,10 @@ IF "%choice%"=="5" SET AudioFormat=vorbis& GOTO :select-quality-audio
 IF "%choice%"=="6" SET CustomFormat-m4a=1& SET AudioFormat=m4a& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
 IF "%choice%"=="7" SET CustomFormat-mp3=1& SET AudioFormat=mp3& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
 IF "%choice%"=="8" SET CustomFormat-aac=1& SET AudioFormat=aac& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="9" SET CustomFormat-m4a=2& SET AudioFormat=m4a& GOTO :select-quality-audio
+IF "%choice%"=="9" SET CustomFormat-m4a=2& SET AudioFormat=m4a& GOTO :select-quality-vbr-audio
 IF "%choice%"=="10" SET CustomFormat-opus=1& SET AudioFormat=opus& GOTO :select-quality-audio
 IF "%choice%"=="11" SET CustomFormat-aac=2& SET AudioFormat=aac& GOTO :select-quality-audio
-IF "%choice%"=="12" SET CustomFormat-m4a=3& SET AudioFormat=m4a& GOTO :select-quality-audio
+IF "%choice%"=="12" SET CustomFormat-m4a=3& SET AudioFormat=m4a& GOTO :select-quality-vbr-audio
 IF "%choice%"=="w" IF "%SectionsAudio%"=="1" (GOTO :select-preset-sections) ELSE (GOTO :start)
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -709,7 +713,7 @@ IF "%choice%"=="8" SET AudioQuality=8& IF "%SectionsAudio%"=="1" (GOTO :select-s
 IF "%choice%"=="9" SET AudioQuality=9& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
 IF "%choice%"=="10" SET AudioQuality=10& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
 IF "%choice%"=="w" GOTO :select-format-audio
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET DownloadLinks=& SET AudioQuality=& SET CustomPreset=& SET VideoResolution=& SET VideoFPS=& SET CustomFormat=& SET StreamAudioFormat=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET DownloadLinks=& SET AudioQuality=& SET CustomPreset=& SET VideoResolution=& SET VideoFPS=& SET CustomFormat=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET CustomFormat-aac=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -717,21 +721,55 @@ ECHO ---------------------------------------------------------------------------
 timeout /t 2 >nul
 GOTO :select-quality-audio
 
+:select-quality-vbr-audio
+cls
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Blue-s%•%ColorOff%  AUDIO VBR QUALITY
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   0. Quality 0 ^(disables VBR, enables CBR^)
+ECHO   1. Quality 1 ^(worst^)
+ECHO   2. Quality 2
+ECHO   3. Quality 3
+ECHO   4. Quality 4
+ECHO   5. Quality 5 ^(best^)
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   w. Go Back
+ECHO   r. Main Menu
+ECHO   q. Exit
+ECHO.
+SET /p choice=!BS!%spcs%Select Audio Quality: 
+IF "%choice%"=="0" SET AudioQuality=0& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
+IF "%choice%"=="1" SET AudioQuality=1& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
+IF "%choice%"=="2" SET AudioQuality=2& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
+IF "%choice%"=="3" SET AudioQuality=3& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
+IF "%choice%"=="4" SET AudioQuality=4& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
+IF "%choice%"=="5" SET AudioQuality=5& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
+IF "%choice%"=="w" GOTO :select-format-audio
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET DownloadLinks=& SET AudioQuality=& SET CustomPreset=& SET VideoResolution=& SET VideoFPS=& SET CustomFormat=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET CustomFormat-aac=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& GOTO :start
+IF "%choice%"=="q" GOTO :exit
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
+ECHO ------------------------------------------------------------------------------------------------------------------------
+timeout /t 2 >nul
+:select-quality-vbr-audio
+
+
 :select-preset-audio
 cls
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Blue-s%•%ColorOff%  AUDIO PRESETS
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   1. Audio Single
-ECHO   2. Audio Release
-ECHO   3. Audio Release + Crop Thumbnail
-ECHO   4. Audio Playlist					11. Audio Playlist + Only New
-ECHO   5. Audio Playlist + Crop Thumbnail			12. Audio Playlist + Only New + Crop Thumbnail
-ECHO   6. Audio Playlist Release				13. Audio Playlist Release + Only New
-ECHO   7. Audio Playlist Release + Crop Thumbnail		14. Audio Playlist Release + Only New + Crop Thumbnail
-ECHO   8. Audio Playlist Various Artists			15. Audio Playlist Various Artists + Only New
-ECHO   9. Audio + Split by Chapters
-ECHO  10. Audio With Top Comments
+ECHO   2. Audio Single + Crop Thumbnail
+ECHO   3. Audio Release
+ECHO   4. Audio Release + Crop Thumbnail
+ECHO   5. Audio Playlist					12. Audio Playlist + Only New
+ECHO   6. Audio Playlist + Crop Thumbnail			13. Audio Playlist + Only New + Crop Thumbnail
+ECHO   7. Audio Playlist Release				14. Audio Playlist Release + Only New
+ECHO   8. Audio Playlist Release + Crop Thumbnail		15. Audio Playlist Release + Only New + Crop Thumbnail
+ECHO   9. Audio Playlist Various Artists			16. Audio Playlist Various Artists + Only New
+ECHO  10. Audio + Split by Chapters
+ECHO  11. Audio With Top Comments
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   e. Download Links From Text List
 ECHO   w. Go Back
@@ -740,23 +778,24 @@ ECHO   q. Exit
 ECHO.
 SET /p choice=!BS!%spcs%Choose Preset: 
 IF "%choice%"=="1" GOTO :doYTDL-audio-preset-2
-IF "%choice%"=="2" GOTO :doYTDL-audio-preset-3
-IF "%choice%"=="3" GOTO :doYTDL-audio-preset-4
-IF "%choice%"=="4" GOTO :doYTDL-audio-preset-5
-IF "%choice%"=="5" GOTO :doYTDL-audio-preset-6
-IF "%choice%"=="6" GOTO :doYTDL-audio-preset-7
-IF "%choice%"=="7" GOTO :doYTDL-audio-preset-8
-IF "%choice%"=="8" GOTO :doYTDL-audio-preset-9
-IF "%choice%"=="9" GOTO :doYTDL-audio-preset-1
-IF "%choice%"=="10" SET CustomPreset=1& GOTO :doYTDL-audio-preset-2
-IF "%choice%"=="11" SET OnlyNew=1& GOTO :doYTDL-audio-preset-5
-IF "%choice%"=="12" SET OnlyNew=1& GOTO :doYTDL-audio-preset-6
-IF "%choice%"=="13" SET OnlyNew=1& GOTO :doYTDL-audio-preset-7
-IF "%choice%"=="14" SET OnlyNew=1& GOTO :doYTDL-audio-preset-8
-IF "%choice%"=="15" SET OnlyNew=1& GOTO :doYTDL-audio-preset-9
+IF "%choice%"=="2" GOTO :doYTDL-audio-preset-10
+IF "%choice%"=="3" GOTO :doYTDL-audio-preset-3
+IF "%choice%"=="4" GOTO :doYTDL-audio-preset-4
+IF "%choice%"=="5" GOTO :doYTDL-audio-preset-5
+IF "%choice%"=="6" GOTO :doYTDL-audio-preset-6
+IF "%choice%"=="7" GOTO :doYTDL-audio-preset-7
+IF "%choice%"=="8" GOTO :doYTDL-audio-preset-8
+IF "%choice%"=="9" GOTO :doYTDL-audio-preset-9
+IF "%choice%"=="10" GOTO :doYTDL-audio-preset-1
+IF "%choice%"=="11" SET CustomPreset=1& GOTO :doYTDL-audio-preset-2
+IF "%choice%"=="12" SET OnlyNew=1& GOTO :doYTDL-audio-preset-5
+IF "%choice%"=="13" SET OnlyNew=1& GOTO :doYTDL-audio-preset-6
+IF "%choice%"=="14" SET OnlyNew=1& GOTO :doYTDL-audio-preset-7
+IF "%choice%"=="15" SET OnlyNew=1& GOTO :doYTDL-audio-preset-8
+IF "%choice%"=="16" SET OnlyNew=1& GOTO :doYTDL-audio-preset-9
 IF "%choice%"=="e" SET DownloadLinks=1& GOTO :doYTDL-audio-preset-0
-IF "%choice%"=="w" GOTO :select-quality-audio
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET DownloadLinks=& SET AudioQuality=& SET CustomPreset=& SET VideoResolution=& SET VideoFPS=& SET CustomFormat=& SET StreamAudioFormat=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& GOTO :start
+IF "%choice%"=="w" IF "%CustomFormat-m4a%"=="2" (GOTO :select-quality-vbr-audio) ELSE (IF "%CustomFormat-m4a%"=="3" (GOTO :select-quality-vbr-audio) ELSE (GOTO :select-quality-audio))
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET DownloadLinks=& SET AudioQuality=& SET CustomPreset=& SET VideoResolution=& SET VideoFPS=& SET CustomFormat=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET CustomFormat-aac=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -771,6 +810,7 @@ GOTO :select-preset-audio
 ::
 
 :select-format-video
+SET CustomFormat=
 SET Downloaded-Video=
 cls
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -845,7 +885,7 @@ IF "%choice%"=="4" GOTO :doYTDL-video-preset-5
 IF "%choice%"=="5" GOTO :doYTDL-video-preset-1
 IF "%choice%"=="e" SET DownloadLinks=1& SET CustomPreset=1& GOTO :doYTDL-video-preset-2
 IF "%choice%"=="w" GOTO :select-format-video
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET DownloadLinks=& SET AudioQuality=& SET CustomPreset=& SET VideoResolution=& SET VideoFPS=& SET CustomFormat=& SET StreamAudioFormat=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET DownloadLinks=& SET AudioQuality=& SET CustomPreset=& SET VideoResolution=& SET VideoFPS=& SET CustomFormat=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET CustomFormat-aac=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -977,7 +1017,7 @@ SET /p choice=!BS!%spcs%Enter Your Choice:
 IF "%choice%"=="1" SET StreamVideoFormat=& SET StreamAudioFormat=1& GOTO :doYTDL-preset-stream-1
 IF "%choice%"=="2" SET StreamVideoFormat=& SET StreamAudioFormat=2& GOTO :doYTDL-preset-stream-1
 IF "%choice%"=="w" GOTO :select-format-stream
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET DownloadLinks=& SET AudioQuality=& SET CustomPreset=& SET VideoResolution=& SET VideoFPS=& SET CustomFormat=& SET StreamAudioFormat=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET DownloadLinks=& SET AudioQuality=& SET CustomPreset=& SET VideoResolution=& SET VideoFPS=& SET CustomFormat=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET CustomFormat-aac=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -1005,7 +1045,7 @@ IF "%choice%"=="2" SET StreamAudioFormat=& SET StreamVideoFormat=2& GOTO :doYTDL
 IF "%choice%"=="3" SET StreamAudioFormat=& SET StreamVideoFormat=3& GOTO :doYTDL-preset-stream-1
 IF "%choice%"=="4" SET StreamAudioFormat=& SET StreamVideoFormat=4& GOTO :doYTDL-preset-stream-1
 IF "%choice%"=="w" GOTO :select-format-stream
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET DownloadLinks=& SET AudioQuality=& SET CustomPreset=& SET VideoResolution=& SET VideoFPS=& SET CustomFormat=& SET StreamAudioFormat=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET DownloadLinks=& SET AudioQuality=& SET CustomPreset=& SET VideoResolution=& SET VideoFPS=& SET CustomFormat=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET CustomFormat-aac=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -1077,7 +1117,7 @@ IF "%choice%"=="9" SET DoSections=9& GOTO :enter-sections-9
 IF "%choice%"=="10" SET DoSections=10& GOTO :enter-sections-10
 IF "%choice%"=="w" GOTO 
 IF "%choice%"=="w" IF "%SectionsVideo%"=="1" (GOTO :select-format-video) ELSE (IF "%SectionsAudio%"=="1" (GOTO :select-quality-audio) ELSE (GOTO :select-preset-sections))
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET DownloadLinks=& SET AudioQuality=& SET CustomPreset=& SET VideoResolution=& SET VideoFPS=& SET CustomFormat=& SET StreamAudioFormat=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET DownloadLinks=& SET AudioQuality=& SET CustomPreset=& SET VideoResolution=& SET VideoFPS=& SET CustomFormat=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET CustomFormat-aac=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -1195,15 +1235,15 @@ SET       Format= --format "ba[acodec^=mp3]/ba/b" --extract-audio --audio-format
 ) ELSE (IF "%CustomFormat-m4a%"=="1" (
 SET       Format= --format "ba[acodec^=mp4a.40.]/ba[acodec^=aac]/ba/b" --extract-audio --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-m4a%"=="2" (
-SET       Format= --format 136 --postprocessor-args ExtractAudio:"-y -ac 2 -c:a libfdk_aac -vbr 5 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0  --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="3" (
-SET       Format= --format 136 --postprocessor-args ExtractAudio:"-y -ac 2 -c:a libfdk_aac -vbr 0 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0 --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -cutoff 20000 -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-aac%"=="1" (
 SET       Format= --format "ba[acodec^=aac]/ba[acodec^=mp4a.40.]/ba/b" --extract-audio --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-aac%"=="2" (
-SET       Format= --postprocessor-args ExtractAudio:"-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""  --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (IF "%CustomFormat-opus%"=="1" (
-SET       Format= --postprocessor-args ExtractAudio:"-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (
 SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
 )))))))
@@ -1244,15 +1284,15 @@ SET       Format= --format "ba[acodec^=mp3]/ba/b" --extract-audio --audio-format
 ) ELSE (IF "%CustomFormat-m4a%"=="1" (
 SET       Format= --format "ba[acodec^=mp4a.40.]/ba[acodec^=aac]/ba/b" --extract-audio --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-m4a%"=="2" (
-SET       Format= --format 136 --postprocessor-args ExtractAudio:"-y -ac 2 -c:a libfdk_aac -vbr 5 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0  --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="3" (
-SET       Format= --format 136 --postprocessor-args ExtractAudio:"-y -ac 2 -c:a libfdk_aac -vbr 0 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0 --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -cutoff 20000 -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-aac%"=="1" (
 SET       Format= --format "ba[acodec^=aac]/ba[acodec^=mp4a.40.]/ba/b" --extract-audio --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-aac%"=="2" (
-SET       Format= --postprocessor-args ExtractAudio:"-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""  --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (IF "%CustomFormat-opus%"=="1" (
-SET       Format= --postprocessor-args ExtractAudio:"-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (
 SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
 )))))))
@@ -1287,6 +1327,57 @@ SET    Thumbnail= --convert-thumbnail %Thumb-Format% --postprocessor-args "Thumb
 ) ELSE (
 SET    Thumbnail= --convert-thumbnail %Thumb-Format%
 ))
+SET    Verbosity= --console-title --progress --progress-template ["Progress":" %%(progress._percent_str)s","Total Bytes":" %%(progress._total_bytes_str)s","Speed":" %%(progress._speed_str)s","ETA":" %%(progress._eta_str)s"]
+SET  WorkArounds=
+IF "%CustomFormat-mp3%"=="1" (
+SET       Format= --format "ba[acodec^=mp3]/ba/b" --extract-audio --audio-format %AudioFormat%
+) ELSE (IF "%CustomFormat-m4a%"=="1" (
+SET       Format= --format "ba[acodec^=mp4a.40.]/ba[acodec^=aac]/ba/b" --extract-audio --audio-format %AudioFormat%
+) ELSE (IF "%CustomFormat-m4a%"=="2" (
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0  --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
+) ELSE (IF "%CustomFormat-m4a%"=="3" (
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0 --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -cutoff 20000 -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
+) ELSE (IF "%CustomFormat-aac%"=="1" (
+SET       Format= --format "ba[acodec^=aac]/ba[acodec^=mp4a.40.]/ba/b" --extract-audio --audio-format %AudioFormat%
+) ELSE (IF "%CustomFormat-aac%"=="2" (
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
+) ELSE (IF "%CustomFormat-opus%"=="1" (
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
+) ELSE (
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+)))))))
+SET     Subtitle=
+IF "%CustomPreset%"=="1" (
+SET     Comments= --write-comments --extractor-args "youtube:max_comments=10;comment_sort=top"
+) ELSE (
+SET     Comments=
+)
+SET Authenticate=
+IF "%CustomPreset%"=="1" (
+SET    AdobePass= --exec before_dl:"%Python-Path% "%YTdlp-Folder%\yt-dlp_nest_comments_fork.py" -i %%(infojson_filename)#q -o %%(infojson_filename)#q.comments.html" --exec before_dl:"del %%(infojson_filename)#q"
+) ELSE (
+SET     AdobePass=
+)
+SET   PreProcess= --parse-metadata "%%(epoch>%%Y-%%m-%%d)s:%%(meta_download_date)s" --parse-metadata "%%(album,playlist_title)s:%%(meta_album)s" --parse-metadata "%%(album_artist,album_artists,uploader)s:%%(meta_album_artist)s" --parse-metadata "%%(artist,artists,creator,uploader)s:%%(meta_artist)s" --parse-metadata "%%(average_rating)s:%%(meta_rating)s" --parse-metadata "%%(composer,composers)s:%%(meta_composer)s" --parse-metadata "%%(disc_number)s:%%(meta_disc)s" --parse-metadata "%%(dislike_count)s:%%(meta_dislikes)s" --parse-metadata "%%(genre,genres)s:%%(meta_genre)s" --parse-metadata "%%(like_count)s:%%(meta_likes)s" --parse-metadata "%%(playlist_index,track_number|01)s:%%(meta_track)s" --parse-metadata "%%(release_date>%%Y-%%m-%%d,release_year,upload_date>%%Y-%%m-%%d)s:%%(meta_date)s" --parse-metadata "%%(view_count)s:%%(meta_views)s" --parse-metadata ":(?P<meta_longdescription>)" --parse-metadata ":(?P<meta_synopsis>)" --parse-metadata ":(?P<meta_encodersettings>)" --parse-metadata ":(?P<meta_purl>)" --parse-metadata "webpage_url:%%(meta_www)s" --replace-in-metadata meta_album_artist " - Topic" "" --replace-in-metadata meta_date "^NA$" "" --replace-in-metadata meta_rating "^NA$" "" --replace-in-metadata meta_views "^NA$" "" --replace-in-metadata meta_likes "^NA$" "" --replace-in-metadata meta_dislikes "^NA$" "" --replace-in-metadata meta_disc "^NA$" "" --replace-in-metadata meta_encodersettings "^.*$" "" --replace-in-metadata meta_composer "^NA$" "" --replace-in-metadata meta_album "^NA$" "" --replace-in-metadata meta_genre "^NA$" "" --replace-in-metadata title "/" "⁄" --replace-in-metadata title ":" "꞉" --replace-in-metadata album "/" "⁄" --replace-in-metadata album ":" "꞉"
+SET  PostProcess= --embed-metadata --embed-thumbnail --compat-options no-attach-info-json
+:: setting variables for continue menu
+SET Downloaded-Video=& SET Downloaded-Audio=1& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET Downloaded-Quick=& GOTO :doYTDL
+
+:: AUDIO SINGLE PRESET + CROP THUMBNAIL PRESET
+:doYTDL-audio-preset-10
+SET  OutTemplate= --output "%TargetFolder%\%%(title)s.%%(ext)s"
+SET      Options= --ignore-errors --ignore-config
+SET      Network=
+SET  GeoRestrict= --xff "default"
+SET       Select= --no-download-archive --no-playlist
+IF "%usearia%"=="1" (
+SET     Download= --limit-rate %SpeedLimit% --downloader "%Aria2-Path%" --downloader-args "aria2c: %Aria-Args%" --compat-options no-external-downloader-progress
+) ELSE (
+SET     Download= --limit-rate %SpeedLimit% --concurrent-fragments %Threads%
+)
+SET Sponsorblock= --no-sponsorblock
+SET   FileSystem= --no-cache-dir --no-mtime --no-part --ffmpeg-location "%FFmpeg-Path%"
+SET    Thumbnail= --postprocessor-args "ThumbnailsConvertor+ffmpeg_o: -c:v %FFmpeg-Thumb-Format% -q:v %Thumb-Compress% -vf crop=\"'if(gt(ih,iw),iw,ih)':'if(gt(iw,ih),ih,iw)'\""
 SET    Verbosity= --console-title --progress --progress-template ["Progress":" %%(progress._percent_str)s","Total Bytes":" %%(progress._total_bytes_str)s","Speed":" %%(progress._speed_str)s","ETA":" %%(progress._eta_str)s"]
 SET  WorkArounds=
 IF "%CustomFormat-mp3%"=="1" (
@@ -1347,14 +1438,22 @@ SET    Thumbnail= --convert-thumbnail %Thumb-Format%
 SET    Verbosity= --console-title --progress --progress-template ["Progress":" %%(progress._percent_str)s","Total Bytes":" %%(progress._total_bytes_str)s","Speed":" %%(progress._speed_str)s","ETA":" %%(progress._eta_str)s"]
 SET  WorkArounds=
 IF "%CustomFormat-mp3%"=="1" (
-SET       Format= --format "ba[acodec^=mp3]/ba/b" --audio-format %AudioFormat% --extract-audio
+SET       Format= --format "ba[acodec^=mp3]/ba/b" --extract-audio --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-m4a%"=="1" (
-SET       Format= --format "ba[acodec^=mp4a.40.]/ba[acodec^=aac]/ba/b" --audio-format %AudioFormat% --extract-audio
+SET       Format= --format "ba[acodec^=mp4a.40.]/ba[acodec^=aac]/ba/b" --extract-audio --audio-format %AudioFormat%
+) ELSE (IF "%CustomFormat-m4a%"=="2" (
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0  --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
+) ELSE (IF "%CustomFormat-m4a%"=="3" (
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0 --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -cutoff 20000 -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-aac%"=="1" (
-SET       Format= --format "ba[acodec^=aac]/ba[acodec^=mp4a.40.]/ba/b" --audio-format %AudioFormat% --extract-audio
+SET       Format= --format "ba[acodec^=aac]/ba[acodec^=mp4a.40.]/ba/b" --extract-audio --audio-format %AudioFormat%
+) ELSE (IF "%CustomFormat-aac%"=="2" (
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
+) ELSE (IF "%CustomFormat-opus%"=="1" (
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (
-SET       Format= --audio-format %AudioFormat% --audio-quality %AudioQuality% --extract-audio
-)))
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+)))))))
 SET     Subtitle=
 SET     Comments=
 SET Authenticate=
@@ -1378,7 +1477,7 @@ SET     Download= --limit-rate %SpeedLimit% --concurrent-fragments %Threads%
 )
 SET Sponsorblock= --no-sponsorblock
 SET   FileSystem= --no-cache-dir --no-mtime --no-part --ffmpeg-location "%FFmpeg-Path%"
-SET    Thumbnail= --postprocessor-args "embedthumbnail+ffmpeg_o: -c:v %FFmpeg-Thumb-Format% -q:v %Thumb-Compress% -vf crop=\"'if(gt(ih,iw),iw,ih)':'if(gt(iw,ih),ih,iw)'\""
+SET    Thumbnail= --postprocessor-args "ThumbnailsConvertor+ffmpeg_o: -c:v %FFmpeg-Thumb-Format% -q:v %Thumb-Compress% -vf crop=\"'if(gt(ih,iw),iw,ih)':'if(gt(iw,ih),ih,iw)'\""
 SET    Verbosity= --console-title --progress --progress-template ["Progress":" %%(progress._percent_str)s","Total Bytes":" %%(progress._total_bytes_str)s","Speed":" %%(progress._speed_str)s","ETA":" %%(progress._eta_str)s"]
 SET  WorkArounds=
 IF "%CustomFormat-mp3%"=="1" (
@@ -1386,15 +1485,15 @@ SET       Format= --format "ba[acodec^=mp3]/ba/b" --extract-audio --audio-format
 ) ELSE (IF "%CustomFormat-m4a%"=="1" (
 SET       Format= --format "ba[acodec^=mp4a.40.]/ba[acodec^=aac]/ba/b" --extract-audio --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-m4a%"=="2" (
-SET       Format= --format 136 --postprocessor-args ExtractAudio:"-y -ac 2 -c:a libfdk_aac -vbr 5 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0  --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="3" (
-SET       Format= --format 136 --postprocessor-args ExtractAudio:"-y -ac 2 -c:a libfdk_aac -vbr 0 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0 --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -cutoff 20000 -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-aac%"=="1" (
 SET       Format= --format "ba[acodec^=aac]/ba[acodec^=mp4a.40.]/ba/b" --extract-audio --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-aac%"=="2" (
-SET       Format= --postprocessor-args ExtractAudio:"-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""  --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (IF "%CustomFormat-opus%"=="1" (
-SET       Format= --postprocessor-args ExtractAudio:"-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (
 SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
 )))))))
@@ -1439,15 +1538,15 @@ SET       Format= --format "ba[acodec^=mp3]/ba/b" --extract-audio --audio-format
 ) ELSE (IF "%CustomFormat-m4a%"=="1" (
 SET       Format= --format "ba[acodec^=mp4a.40.]/ba[acodec^=aac]/ba/b" --extract-audio --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-m4a%"=="2" (
-SET       Format= --format 136 --postprocessor-args ExtractAudio:"-y -ac 2 -c:a libfdk_aac -vbr 5 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0  --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="3" (
-SET       Format= --format 136 --postprocessor-args ExtractAudio:"-y -ac 2 -c:a libfdk_aac -vbr 0 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0 --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -cutoff 20000 -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-aac%"=="1" (
 SET       Format= --format "ba[acodec^=aac]/ba[acodec^=mp4a.40.]/ba/b" --extract-audio --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-aac%"=="2" (
-SET       Format= --postprocessor-args ExtractAudio:"-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""  --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (IF "%CustomFormat-opus%"=="1" (
-SET       Format= --postprocessor-args ExtractAudio:"-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (
 SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
 )))))))
@@ -1478,7 +1577,7 @@ SET     Download= --limit-rate %SpeedLimit% --concurrent-fragments %Threads%
 )
 SET Sponsorblock= --no-sponsorblock
 SET   FileSystem= --no-cache-dir --no-mtime --no-part --ffmpeg-location "%FFmpeg-Path%"
-SET    Thumbnail= --postprocessor-args "embedthumbnail+ffmpeg_o: -c:v %FFmpeg-Thumb-Format% -q:v %Thumb-Compress% -vf crop=\"'if(gt(ih,iw),iw,ih)':'if(gt(iw,ih),ih,iw)'\""
+SET    Thumbnail= --postprocessor-args "ThumbnailsConvertor+ffmpeg_o: -c:v %FFmpeg-Thumb-Format% -q:v %Thumb-Compress% -vf crop=\"'if(gt(ih,iw),iw,ih)':'if(gt(iw,ih),ih,iw)'\""
 SET    Verbosity= --console-title --progress --progress-template ["Progress":" %%(progress._percent_str)s","Total Bytes":" %%(progress._total_bytes_str)s","Speed":" %%(progress._speed_str)s","ETA":" %%(progress._eta_str)s"]
 SET  WorkArounds=
 IF "%CustomFormat-mp3%"=="1" (
@@ -1486,15 +1585,15 @@ SET       Format= --format "ba[acodec^=mp3]/ba/b" --extract-audio --audio-format
 ) ELSE (IF "%CustomFormat-m4a%"=="1" (
 SET       Format= --format "ba[acodec^=mp4a.40.]/ba[acodec^=aac]/ba/b" --extract-audio --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-m4a%"=="2" (
-SET       Format= --format 136 --postprocessor-args ExtractAudio:"-y -ac 2 -c:a libfdk_aac -vbr 5 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0  --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="3" (
-SET       Format= --format 136 --postprocessor-args ExtractAudio:"-y -ac 2 -c:a libfdk_aac -vbr 0 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0 --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -cutoff 20000 -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-aac%"=="1" (
 SET       Format= --format "ba[acodec^=aac]/ba[acodec^=mp4a.40.]/ba/b" --extract-audio --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-aac%"=="2" (
-SET       Format= --postprocessor-args ExtractAudio:"-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""  --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (IF "%CustomFormat-opus%"=="1" (
-SET       Format= --postprocessor-args ExtractAudio:"-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (
 SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
 )))))))
@@ -1539,15 +1638,15 @@ SET       Format= --format "ba[acodec^=mp3]/ba/b" --extract-audio --audio-format
 ) ELSE (IF "%CustomFormat-m4a%"=="1" (
 SET       Format= --format "ba[acodec^=mp4a.40.]/ba[acodec^=aac]/ba/b" --extract-audio --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-m4a%"=="2" (
-SET       Format= --format 136 --postprocessor-args ExtractAudio:"-y -ac 2 -c:a libfdk_aac -vbr 5 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0  --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="3" (
-SET       Format= --format 136 --postprocessor-args ExtractAudio:"-y -ac 2 -c:a libfdk_aac -vbr 0 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0 --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -cutoff 20000 -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-aac%"=="1" (
 SET       Format= --format "ba[acodec^=aac]/ba[acodec^=mp4a.40.]/ba/b" --extract-audio --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-aac%"=="2" (
-SET       Format= --postprocessor-args ExtractAudio:"-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""  --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (IF "%CustomFormat-opus%"=="1" (
-SET       Format= --postprocessor-args ExtractAudio:"-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (
 SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
 )))))))
@@ -1578,7 +1677,7 @@ SET     Download= --limit-rate %SpeedLimit% --concurrent-fragments %Threads%
 )
 SET Sponsorblock= --no-sponsorblock
 SET   FileSystem= --no-cache-dir --no-mtime --no-part --ffmpeg-location "%FFmpeg-Path%"
-SET    Thumbnail= --embed-thumbnail --postprocessor-args "embedthumbnail+ffmpeg_o: -c:v %FFmpeg-Thumb-Format% -q:v %Thumb-Compress% -vf crop=\"'if(gt(ih,iw),iw,ih)':'if(gt(iw,ih),ih,iw)'\""
+SET    Thumbnail= --embed-thumbnail --postprocessor-args "ThumbnailsConvertor+ffmpeg_o: -c:v %FFmpeg-Thumb-Format% -q:v %Thumb-Compress% -vf crop=\"'if(gt(ih,iw),iw,ih)':'if(gt(iw,ih),ih,iw)'\""
 SET    Verbosity= --console-title --progress --progress-template ["Progress":" %%(progress._percent_str)s","Total Bytes":" %%(progress._total_bytes_str)s","Speed":" %%(progress._speed_str)s","ETA":" %%(progress._eta_str)s"]
 SET  WorkArounds=
 IF "%CustomFormat-mp3%"=="1" (
@@ -1586,15 +1685,15 @@ SET       Format= --format "ba[acodec^=mp3]/ba/b" --extract-audio --audio-format
 ) ELSE (IF "%CustomFormat-m4a%"=="1" (
 SET       Format= --format "ba[acodec^=mp4a.40.]/ba[acodec^=aac]/ba/b" --extract-audio --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-m4a%"=="2" (
-SET       Format= --format 136 --postprocessor-args ExtractAudio:"-y -ac 2 -c:a libfdk_aac -vbr 5 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0  --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="3" (
-SET       Format= --format 136 --postprocessor-args ExtractAudio:"-y -ac 2 -c:a libfdk_aac -vbr 0 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0 --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -cutoff 20000 -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-aac%"=="1" (
 SET       Format= --format "ba[acodec^=aac]/ba[acodec^=mp4a.40.]/ba/b" --extract-audio --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-aac%"=="2" (
-SET       Format= --postprocessor-args ExtractAudio:"-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""  --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (IF "%CustomFormat-opus%"=="1" (
-SET       Format= --postprocessor-args ExtractAudio:"-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (
 SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
 )))))))
@@ -1639,15 +1738,15 @@ SET       Format= --format "ba[acodec^=mp3]/ba/b" --extract-audio --audio-format
 ) ELSE (IF "%CustomFormat-m4a%"=="1" (
 SET       Format= --format "ba[acodec^=mp4a.40.]/ba[acodec^=aac]/ba/b" --extract-audio --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-m4a%"=="2" (
-SET       Format= --format 136 --postprocessor-args ExtractAudio:"-y -ac 2 -c:a libfdk_aac -vbr 5 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0  --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="3" (
-SET       Format= --format 136 --postprocessor-args ExtractAudio:"-y -ac 2 -c:a libfdk_aac -vbr 0 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0 --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -cutoff 20000 -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-aac%"=="1" (
 SET       Format= --format "ba[acodec^=aac]/ba[acodec^=mp4a.40.]/ba/b" --extract-audio --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-aac%"=="2" (
-SET       Format= --postprocessor-args ExtractAudio:"-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""  --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (IF "%CustomFormat-opus%"=="1" (
-SET       Format= --postprocessor-args ExtractAudio:"-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (
 SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
 )))))))
@@ -1708,7 +1807,7 @@ SET       Format= --format "bestvideo[height<=1080][dynamic_range=?SDR]+bestaudi
 ) ELSE (IF "%CustomFormat%"=="9" (
 SET       Format= -S "res:480,codec:vp9" --merge-output-format mp4 --ppa Merger:"-ac 2 -c:a libfdk_aac -vbr 5 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (IF "%CustomFormat%"=="10" (
-SET       Format= -S "res:480,codec:vp9" --merge-output-format mp4 --audio-quality 0 --audio-format m4a --ppa Merger:"-y -ac 2 -c:a libfdk_aac -cutoff 17000 -afterburner 1 -vbr 0 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
+SET       Format= -S "res:480,codec:vp9" --merge-output-format mp4 --audio-quality 0 --audio-format m4a --ppa Merger:"-y -ac 2 -c:a libfdk_aac -cutoff 20000 -afterburner 1 -vbr 0 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (
 SET       Format= --format "bestvideo[height=?%VideoResolution%][fps=?%VideoFPS%]+bestaudio/bestvideo[height<=?%VideoResolution%][fps<=?%VideoFPS%]+bestaudio/best" --merge-output-format mkv --remux-video mkv
 ))))))))))
@@ -1767,7 +1866,7 @@ SET       Format= --format "bestvideo[height<=1080][dynamic_range=?SDR]+bestaudi
 ) ELSE (IF "%CustomFormat%"=="9" (
 SET       Format= -S "res:480,codec:vp9" --merge-output-format mp4 --ppa Merger:"-ac 2 -c:a libfdk_aac -vbr 5 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (IF "%CustomFormat%"=="10" (
-SET       Format= -S "res:480,codec:vp9" --merge-output-format mp4 --audio-quality 0 --audio-format m4a --ppa Merger:"-y -ac 2 -c:a libfdk_aac -cutoff 17000 -afterburner 1 -vbr 0 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
+SET       Format= -S "res:480,codec:vp9" --merge-output-format mp4 --audio-quality 0 --audio-format m4a --ppa Merger:"-y -ac 2 -c:a libfdk_aac -cutoff 20000 -afterburner 1 -vbr 0 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (
 SET       Format= --format "bestvideo[height=?%VideoResolution%][fps=?%VideoFPS%]+bestaudio/bestvideo[height<=?%VideoResolution%][fps<=?%VideoFPS%]+bestaudio/best" --merge-output-format mkv --remux-video mkv
 ))))))))))
@@ -1879,7 +1978,7 @@ SET       Format= --format "bestvideo[height<=1080][dynamic_range=?SDR]+bestaudi
 ) ELSE (IF "%CustomFormat%"=="9" (
 SET       Format= -S "res:480,codec:vp9" --merge-output-format mp4 --ppa Merger:"-ac 2 -c:a libfdk_aac -vbr 5 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (IF "%CustomFormat%"=="10" (
-SET       Format= -S "res:480,codec:vp9" --merge-output-format mp4 --audio-quality 0 --audio-format m4a --ppa Merger:"-y -ac 2 -c:a libfdk_aac -cutoff 17000 -afterburner 1 -vbr 0 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
+SET       Format= -S "res:480,codec:vp9" --merge-output-format mp4 --audio-quality 0 --audio-format m4a --ppa Merger:"-y -ac 2 -c:a libfdk_aac -cutoff 20000 -afterburner 1 -vbr 0 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (
 SET       Format= --format "bestvideo[height=?%VideoResolution%][fps=?%VideoFPS%]+bestaudio/bestvideo[height<=?%VideoResolution%][fps<=?%VideoFPS%]+bestaudio/best" --merge-output-format mkv --remux-video mkv
 ))))))))))
@@ -1938,7 +2037,7 @@ SET       Format= --format "bestvideo[height<=1080][dynamic_range=?SDR]+bestaudi
 ) ELSE (IF "%CustomFormat%"=="9" (
 SET       Format= -S "res:480,codec:vp9" --merge-output-format mp4 --ppa Merger:"-ac 2 -c:a libfdk_aac -vbr 5 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (IF "%CustomFormat%"=="10" (
-SET       Format= -S "res:480,codec:vp9" --merge-output-format mp4 --audio-quality 0 --audio-format m4a --ppa Merger:"-y -ac 2 -c:a libfdk_aac -cutoff 17000 -afterburner 1 -vbr 0 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
+SET       Format= -S "res:480,codec:vp9" --merge-output-format mp4 --audio-quality 0 --audio-format m4a --ppa Merger:"-y -ac 2 -c:a libfdk_aac -cutoff 20000 -afterburner 1 -vbr 0 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (
 SET       Format= --format "bestvideo[height=?%VideoResolution%][fps=?%VideoFPS%]+bestaudio/bestvideo[height<=?%VideoResolution%][fps<=?%VideoFPS%]+bestaudio/best" --merge-output-format mkv --remux-video mkv
 ))))))))))
@@ -2162,15 +2261,15 @@ SET       Format= --format "ba[acodec^=mp3]/ba/b" --extract-audio --audio-format
 ) ELSE (IF "%CustomFormat-m4a%"=="1" (
 SET       Format= --format "ba[acodec^=mp4a.40.]/ba[acodec^=aac]/ba/b" --extract-audio --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-m4a%"=="2" (
-SET       Format= --format 136 --postprocessor-args ExtractAudio:"-y -ac 2 -c:a libfdk_aac -vbr 5 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0  --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="3" (
-SET       Format= --format 136 --postprocessor-args ExtractAudio:"-y -ac 2 -c:a libfdk_aac -vbr 0 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality 0 --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libfdk_aac -vbr %AudioQuality% -cutoff 20000 -afterburner 1 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-aac%"=="1" (
 SET       Format= --format "ba[acodec^=aac]/ba[acodec^=mp4a.40.]/ba/b" --extract-audio --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-aac%"=="2" (
-SET       Format= --postprocessor-args ExtractAudio:"-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""  --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a aac -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (IF "%CustomFormat-opus%"=="1" (
-SET       Format= --postprocessor-args ExtractAudio:"-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\"" --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
+SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality% --postprocessor-args "ExtractAudio:-vn -y -ac 2 -c:a libopus -filter_complex \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (IF "%SectionsAudio%"=="1" (
 SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
 ) ELSE (IF "%CustomFormat%"=="1" (
@@ -2192,7 +2291,7 @@ SET       Format= --format "bestvideo[height<=1080][dynamic_range=?SDR]+bestaudi
 ) ELSE (IF "%CustomFormat%"=="9" (
 SET       Format= -S "res:480,codec:vp9" --merge-output-format mp4 --ppa Merger:"-ac 2 -c:a libfdk_aac -vbr 5 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (IF "%CustomFormat%"=="10" (
-SET       Format= -S "res:480,codec:vp9" --merge-output-format mp4 --audio-quality 0 --audio-format m4a --ppa Merger:"-y -ac 2 -c:a libfdk_aac -cutoff 17000 -afterburner 1 -vbr 0 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
+SET       Format= -S "res:480,codec:vp9" --merge-output-format mp4 --audio-quality 0 --audio-format m4a --ppa Merger:"-y -ac 2 -c:a libfdk_aac -cutoff 20000 -afterburner 1 -vbr 0 -af \"compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm\""
 ) ELSE (IF "%SectionsVideo%"=="1" (
 SET       Format= --format "bestvideo[height=?%VideoResolution%][fps=?%VideoFPS%]+bestaudio/bestvideo[height<=?%VideoResolution%][fps<=?%VideoFPS%]+bestaudio/best" --merge-output-format mkv --remux-video mkv
 )))))))))))))))))))
