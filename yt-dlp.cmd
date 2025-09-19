@@ -1325,7 +1325,7 @@ SET Downloaded-Video=& SET Downloaded-Audio=1& SET Downloaded-Manual=& SET Downl
 
 :: AUDIO RELEASE PRESET
 :doYTDL-audio-preset-3
-SET  OutTemplate= --output "%TargetFolder%\%%(artists.0,artist)s - %%(title)s (%%(album), %%(release_year,release_date>%%Y,upload_date>%%Y)s).%%(ext)s"
+SET  OutTemplate= --output "%TargetFolder%\%%(artists.0,artist)s - %%(title)s (%%(album)s, %%(release_year,release_date>%%Y,upload_date>%%Y)s).%%(ext)s"
 SET      Options= --ignore-errors --ignore-config
 SET      Network=
 SET  GeoRestrict= --xff "default"
@@ -1366,7 +1366,7 @@ SET Downloaded-Video=& SET Downloaded-Audio=1& SET Downloaded-Manual=& SET Downl
 
 :: AUDIO RELEASE + CROP THUMBNAIL PRESET
 :doYTDL-audio-preset-4
-SET  OutTemplate= --output "%TargetFolder%\%%(artists.0,artist)s - %%(title)s (%%(album), %%(release_year,release_date>%%Y,upload_date>%%Y)s).%%(ext)s"
+SET  OutTemplate= --output "%TargetFolder%\%%(artists.0,artist)s - %%(title)s (%%(album)s, %%(release_year,release_date>%%Y,upload_date>%%Y)s).%%(ext)s"
 SET      Options= --ignore-errors --ignore-config
 SET      Network=
 SET  GeoRestrict= --xff "default"
@@ -2441,3 +2441,4 @@ timeout /t 3 >nul
 EXIT /B 0
 
 )
+
