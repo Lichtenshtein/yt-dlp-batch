@@ -25,6 +25,16 @@ Fill-in the settings (example).
 
 ![screenshot](img/img_01.png)
 
+### Recommended Tools
+- [yt-dlp-ReturnYoutubeDislike](https://github.com/pukkandan/yt-dlp-returnyoutubedislike) - A postprocessor plugin for Return YouTube Dislikes.
+- [yt-autosub-srt-fix](https://github.com/jgoguen/srt_fix) - A plugin to fix double lines of YouTube subtitles.
+- [yt-dlp-YTCustomChapters](https://github.com/bashonly/yt-dlp-YTCustomChapters) - Extractor plugin for using custom YouTube chapter lists.
+- [yt-dlp-replaygain](https://github.com/Eboreg/yt-dlp-replaygain) - Postprocessor plugin for audio volume normalization.
+  - [rsgain](https://github.com/complexlogic/rsgain)
+  - [AACGain](https://www.rarewares.org/aac-encoders.php#aacgain)
+  - [VorbisGain](https://www.rarewares.org/ogg-tools.php#vorbisgain)
+  - [MP3Gain](https://mp3gain.sourceforge.net/download.php)
+
 ## Screenshots
 
 ![screenshot](img/img_02.png)  
