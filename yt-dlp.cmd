@@ -6,7 +6,7 @@
 :: and text files may be used. text files are found 
 :: and processed first, then all URLs.
 ::
-:: v1.0.3 23.09.2025 Lichtenshtein
+:: v1.3 24.09.2025 Lichtenshtein
 
 :: to convert comments to readable HTML python needs to be installed
 :: then you may also need to install "pip install json2html"
@@ -16,13 +16,14 @@
 
 @ECHO OFF
 
-:: register --postprocessor-args exe locations to system PATH
-:: SET "PATH=%PATH%;"
 setlocal ENABLEDELAYEDEXPANSION
 :: endlocal
 
+
 :: set terminal size (scrolling won't work without walkarouds)
-REM MODE con: cols=120 lines=48
+:: MODE con: cols=120 lines=53
+:: set the screen buffer size to enable scrolling (this is walkaroud for scrolling)
+:: powershell -command "&{$H=get-host;$W=$H.ui.rawui;$B=$W.buffersize;$B.width=120;$B.height=9999;$W.buffersize=$B;}"
 :: set terminal color, and codepage to unicode (65001=UTF-8)
 color 0f
 CHCP 65001 >NUL
@@ -119,6 +120,9 @@ SET ColorOff=%ESC%[0m
 :: example
 :: ECHO An attempt to show a word as %Underline%yellow%ColorOff% color in a sentence...
 
+:: temporary register exes required for plugins to system PATH
+:: SET "PATH=%PATH%;B:\phantomjs;B:\rsgain;B:\aacgain;B:\vorbisgain;B:\mp3gain;"
+
 :: set target folder and exe locations
 SET    TargetFolder=B:\Downloads
 SET    YTdlp-Folder=B:\yt-dlp
@@ -148,6 +152,8 @@ SET      Thumb-Compress=3
 SET           Sub-langs=en,en-en,ru,-live_chat
 SET          Sub-Format=srt/vtt/ass/best
 SET          User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0
+:: plugins settings
+SET	  Chapters-Path=%YTdlp-Folder%\chapters.txt
 :: if defined will create folders for each text list entered
 SET 	MakeListDir=
 :: capture errorlevel and display warning if non-zero for yt-dlp
@@ -281,9 +287,10 @@ ECHO   %Cyan-s%5%ColorOff%. Download Comments Only
 ECHO   %Cyan-s%6%ColorOff%. Download Section
 ECHO   %Cyan-s%7%ColorOff%. Stream to Player
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%e%ColorOff%. Enter URL		 %Cyan-s%c%ColorOff%. Error Info
-ECHO   %Cyan-s%w%ColorOff%. Set Downloader	 %Cyan-s%x%ColorOff%. Version Info
-ECHO   %Cyan-s%s%ColorOff%. Set Cookies	 %Cyan-s%z%ColorOff%. Update
+ECHO   %Yellow-s%e%ColorOff%. Enter URL		 %Yellow-s%v%ColorOff%. Version Info
+ECHO   %Yellow-s%w%ColorOff%. Set Downloader	 %Yellow-s%u%ColorOff%. Update
+ECHO   %Yellow-s%c%ColorOff%. Set Cookies	 %Yellow-s%x%ColorOff%. Error Info
+ECHO   %Yellow-s%p%ColorOff%. Set Plugins
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p choice=!BS!%spcs%Enter Your Choice: 
@@ -295,10 +302,11 @@ IF "%choice%"=="5" GOTO :select-preset-comments
 IF "%choice%"=="6" GOTO :select-preset-sections
 IF "%choice%"=="7" GOTO :select-format-stream
 IF "%choice%"=="e" GOTO :getURL-re-enter
-IF "%choice%"=="x" GOTO :info
-IF "%choice%"=="c" GOTO :error-info
-IF "%choice%"=="z" GOTO :update
-IF "%choice%"=="s" GOTO :cookies
+IF "%choice%"=="v" GOTO :info
+IF "%choice%"=="x" GOTO :error-info
+IF "%choice%"=="u" GOTO :update
+IF "%choice%"=="c" GOTO :cookies
+IF "%choice%"=="p" GOTO :plugins
 IF "%choice%"=="w" GOTO :aria
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -377,7 +385,7 @@ ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p usearia=!BS!%spcs%Use aria2c as External Downloader? 
 IF "%usearia%"=="1" GOTO :start
-IF "%usearia%"=="2" GOTO :start
+IF "!usearia!"=="2" SET !usearia!=& GOTO :start
 IF "%usearia%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -397,13 +405,119 @@ ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p usecookies=!BS!%spcs%Use cookies.txt? 
 IF "%usecookies%"=="1" GOTO :start
-IF "%usecookies%"=="2" GOTO :start
+IF "!usecookies!"=="2" SET !usecookies!=& GOTO :start
 IF "%usecookies%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 2 >nul
 GOTO :cookies
+
+:plugins
+cls
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Blue-s%•%ColorOff%  PLUGINS
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Cyan-s%1%ColorOff%. Use SRT_fix
+ECHO   %Cyan-s%2%ColorOff%. Use ReplayGain
+ECHO   %Cyan-s%3%ColorOff%. Use CustomChapters
+ECHO   %Cyan-s%4%ColorOff%. Use ReturnYoutubeDislike
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Yellow-s%w%ColorOff%. Go Back
+ECHO   %Red-s%q%ColorOff%. Exit
+ECHO.
+SET /p choice=!BS!%spcs%Which Plugin to Enable? 
+IF "%choice%"=="1" GOTO :plugin-1
+IF "%choice%"=="2" GOTO :plugin-2
+IF "%choice%"=="3" GOTO :plugin-3
+IF "%choice%"=="4" GOTO :plugin-4
+IF "%choice%"=="w" GOTO :start
+IF "%choice%"=="q" GOTO :exit
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
+ECHO ------------------------------------------------------------------------------------------------------------------------
+timeout /t 2 >nul
+GOTO :plugins
+
+:plugin-1
+cls
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Blue-s%•%ColorOff%  SRT_fixer
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Cyan-s%1%ColorOff%. Yes
+ECHO   %Cyan-s%2%ColorOff%. No
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Red-s%q%ColorOff%. Exit
+ECHO.
+SET /p use_pl_srtfixer=!BS!%spcs%Enable SRT_fixer Plugin? 
+IF "%use_pl_srtfixer%"=="1" GOTO :plugins
+IF "!use_pl_srtfixer!"=="2" SET !use_pl_srtfixer!=& GOTO :plugins
+IF "%use_pl_srtfixer%"=="q" GOTO :exit
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
+ECHO ------------------------------------------------------------------------------------------------------------------------
+timeout /t 2 >nul
+GOTO :plugin-1
+
+:plugin-2
+cls
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Blue-s%•%ColorOff%  ReplayGain
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Cyan-s%1%ColorOff%. Yes
+ECHO   %Cyan-s%2%ColorOff%. No
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Red-s%q%ColorOff%. Exit
+ECHO.
+SET /p use_pl_replaygain=!BS!%spcs%Enable ReplayGain Plugin? 
+IF "%use_pl_replaygain%"=="1" GOTO :plugins
+IF "!use_pl_replaygain!"=="2" SET !use_pl_replaygain!=& GOTO :plugins
+IF "%use_pl_replaygain%"=="q" GOTO :exit
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
+ECHO ------------------------------------------------------------------------------------------------------------------------
+timeout /t 2 >nul
+GOTO :plugin-2
+
+:plugin-3
+cls
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Blue-s%•%ColorOff%  CustomChapters
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Cyan-s%1%ColorOff%. Yes
+ECHO   %Cyan-s%2%ColorOff%. No
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Red-s%q%ColorOff%. Exit
+ECHO.
+SET /p use_pl_customchapters=!BS!%spcs%Enable CustomChapters Plugin? 
+IF "%use_pl_customchapters%"=="1" GOTO :plugins
+IF "!use_pl_customchapters!"=="2" SET !use_pl_customchapters!=& GOTO :plugins
+IF "%use_pl_customchapters%"=="q" GOTO :exit
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
+ECHO ------------------------------------------------------------------------------------------------------------------------
+timeout /t 2 >nul
+GOTO :plugin-3
+
+:plugin-4
+cls
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Blue-s%•%ColorOff%  ReturnYoutubeDislike
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Cyan-s%1%ColorOff%. Yes
+ECHO   %Cyan-s%2%ColorOff%. No
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Red-s%q%ColorOff%. Exit
+ECHO.
+SET /p use_pl_returnyoutubedislike=!BS!%spcs%Enable ReturnYoutubeDislike Plugin? 
+IF "%use_pl_returnyoutubedislike%"=="1" GOTO :plugins
+IF "!use_pl_returnyoutubedislike!"=="2" SET !use_pl_returnyoutubedislike!=& GOTO :plugins
+IF "%use_pl_returnyoutubedislike%"=="q" GOTO :exit
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
+ECHO ------------------------------------------------------------------------------------------------------------------------
+timeout /t 2 >nul
+GOTO :plugin-4
 
 :info
 cls
@@ -413,9 +527,9 @@ ECHO ---------------------------------------------------------------------------
 %YTdlp-Path% -v
 IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Bold%%appErr%%ColorOff%.
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Green-s%•%ColorOff%  Done
+ECHO   %Green-s%•%ColorOff%  OK
 ECHO ------------------------------------------------------------------------------------------------------------------------
-PAUSE
+PAUSE 2 >nul
 GOTO :start
 
 :error-info
@@ -423,18 +537,18 @@ cls
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Blue-s%•%ColorOff%  YT-DLP ERROR INFO
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   ›  %Cyan-s%0%ColorOff% = No error
-ECHO   ›  %Cyan-s%1%ColorOff% = Invalid url/Missing file
-ECHO   ›  %Cyan-s%2%ColorOff% = No arguments/Invalid parameters
-ECHO   ›  %Cyan-s%3%ColorOff% = File I/O error
-ECHO   ›  %Cyan-s%4%ColorOff% = Network failure
-ECHO   ›  %Cyan-s%5%ColorOff% = SSL verification failure
-ECHO   ›  %Cyan-s%6%ColorOff% = Username/Password failure
-ECHO   ›  %Cyan-s%7%ColorOff% = Protocol errors
-ECHO   ›  %Cyan-s%8%ColorOff% = Server issued an error response
-ECHO   ›  %Cyan-s%403%ColorOff% = Bot protection/Need to set cookies
+ECHO   0  No error
+ECHO   1  Invalid url/Missing file
+ECHO   2  No arguments/Invalid parameters
+ECHO   3  File I/O error
+ECHO   4  Network failure
+ECHO   5  SSL verification failure
+ECHO   6  Username/Password failure
+ECHO   7  Protocol errors
+ECHO   8  Server issued an error response
+ECHO  403 Bot protection/Need to set cookies
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Green-s%•%ColorOff%  Continue...
+ECHO   %Green-s%•%ColorOff%  OK
 ECHO ------------------------------------------------------------------------------------------------------------------------
 PAUSE 2 >nul
 GOTO :start
@@ -447,7 +561,7 @@ ECHO ---------------------------------------------------------------------------
 %YTdlp-Path% -U
 IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Bold%%appErr%%ColorOff%.
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Yellow-s%•%ColorOff%  Wait...
+ECHO   %Yellow-s%•%ColorOff%  Continue
 ECHO ------------------------------------------------------------------------------------------------------------------------
 PAUSE
 GOTO :start
@@ -465,9 +579,9 @@ ECHO   %Cyan-s%2%ColorOff%. Retry
 ECHO   %Cyan-s%3%ColorOff%. Main Menu
 ECHO ------------------------------------------------------------------------------------------------------------------------
 :: re-enter link to retry the download
-ECHO   %Cyan-s%e%ColorOff%. Re-Enter URL
+ECHO   %Yellow-s%e%ColorOff%. Re-Enter URL
 :: this seems useless here, params won't change from within this menu
-REM ECHO   %Cyan-s%w%ColorOff%. Set Downloader
+REM ECHO   %Yellow-s%w%ColorOff%. Set Downloader
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p choice=!BS!%spcs%Exit? 
@@ -493,7 +607,7 @@ GOTO :doYTDL-quick
 ) ELSE (
 ECHO   %Red-s%•%ColorOff%  Nothing to Retry. & GOTO :continue
 ))))))))))
-IF "%choice%"=="3" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& GOTO :start
+IF "%choice%"=="3" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& GOTO :start
 IF "%choice%"=="e" GOTO :getURL-re-enter
 REM IF "%choice%"=="w" GOTO :aria
 IF "%choice%"=="q" GOTO :exit
@@ -523,7 +637,7 @@ SET Downloaded-Manual=& SET Downloaded-Manual-Single=
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  FETCHING URL...
 ECHO ------------------------------------------------------------------------------------------------------------------------
-%YTdlp-Path% -F "%URL%"
+%YTdlp-Path% --list-formats --no-playlist --simulate --extractor-args "youtube:player_client=mweb" --ffmpeg-location "%FFmpeg-Path%" "%URL%"
 IF "%usearia%"=="1" (
 SET     Download= --limit-rate %SpeedLimit% --downloader "%Aria2-Path%" --downloader-args "aria2c: %Aria-Args%" --compat-options no-external-downloader-progress
 ) ELSE (
@@ -533,7 +647,7 @@ GOTO :selection
 
 :selection
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%1%ColorOff%. Video + Audio		%Cyan-s%w%ColorOff%. Go Back
+ECHO   %Cyan-s%1%ColorOff%. Video + Audio		%Yellow-s%w%ColorOff%. Go Back
 ECHO   %Cyan-s%2%ColorOff%. Audio Only / Video Only	%Red-s%q%ColorOff%. Exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 SET /P choice=!BS!%spcs%Select Option: 
@@ -608,7 +722,7 @@ ECHO   %Cyan-s%7%ColorOff%. Extract mp4a	%Cyan-s%12%ColorOff%. Extract mp4a ^(up
 ECHO   %Cyan-s%8%ColorOff%. Extract vorbis
 ECHO   %Cyan-s%9%ColorOff%. Extract mp3
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%w%ColorOff%. Go Back
+ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p choice=!BS!%spcs%Select Audio Format: 
@@ -617,17 +731,17 @@ IF "%choice%"=="2" SET AudioFormat=mp3& GOTO :select-quality-audio
 IF "%choice%"=="3" SET AudioFormat=opus& GOTO :select-quality-audio
 IF "%choice%"=="4" SET AudioFormat=aac& GOTO :select-quality-audio
 IF "%choice%"=="5" SET AudioFormat=vorbis& GOTO :select-quality-audio
-IF "%choice%"=="6" SET CustomFormatAudio=1& SET CustomFormat-opus=1& SET AudioFormat=opus& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="7" SET CustomFormatAudio=1& SET CustomFormat-m4a=1& SET AudioFormat=m4a& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="8" SET CustomFormatAudio=1& SET CustomFormat-ogg=1& SET AudioFormat=vorbis& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="9" SET CustomFormatAudio=1& SET CustomFormat-mp3=1& SET AudioFormat=mp3& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
+IF "%choice%"=="6" SET CustomFormatAudio=1& SET CustomFormat-opus=1& SET AudioFormat=opus& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="7" SET CustomFormatAudio=1& SET CustomFormat-m4a=1& SET AudioFormat=m4a& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="8" SET CustomFormatAudio=1& SET CustomFormat-ogg=1& SET AudioFormat=vorbis& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="9" SET CustomFormatAudio=1& SET CustomFormat-mp3=1& SET AudioFormat=mp3& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
 IF "%choice%"=="10" SET CustomFormat-m4a=2& SET AudioFormat=m4a& GOTO :select-quality-vbr-audio
-IF "%choice%"=="11" SET CustomFormatAudio=1& SET CustomFormat-opus=2& SET AudioFormat=opus& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="12" SET CustomFormatAudio=1& SET CustomFormat-m4a=3& SET AudioFormat=m4a& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
+IF "%choice%"=="11" SET CustomFormatAudio=1& SET CustomFormat-opus=2& SET AudioFormat=opus& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="12" SET CustomFormatAudio=1& SET CustomFormat-m4a=3& SET AudioFormat=m4a& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
 IF "%choice%"=="13" SET CustomFormat-m4a=4& SET AudioFormat=m4a& GOTO :select-quality-vbr-audio
-IF "%choice%"=="14" SET CustomFormatAudio=1& SET CustomFormat-opus=3& SET AudioFormat=opus& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
+IF "%choice%"=="14" SET CustomFormatAudio=1& SET CustomFormat-opus=3& SET AudioFormat=opus& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
 IF "%choice%"=="15" SET CustomFormat-m4a=5& SET AudioFormat=m4a& GOTO :select-quality-vbr-audio
-IF "%choice%"=="w" IF "%SectionsAudio%"=="1" (GOTO :select-preset-sections) ELSE (GOTO :start)
+IF "%choice%"=="w" IF "%SectionsAudio%"=="1" (GOTO :select-preset-sections) ELSE (IF "%SectionsAudio%"=="2" (GOTO :select-preset-sections) ELSE (GOTO :start))
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -696,24 +810,24 @@ ECHO  %Cyan-s%11%ColorOff%. Quality 320k ^(320 Kbps/CBR^)
 ECHO  %Cyan-s%11%ColorOff%. Quality 0 ^(best, overkill^)
 )
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%w%ColorOff%. Go Back
-ECHO   %Cyan-s%r%ColorOff%. Main Menu
+ECHO   %Yellow-s%w%ColorOff%. Go Back
+ECHO   %Yellow-s%r%ColorOff%. Main Menu
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p choice=!BS!%spcs%Select Audio Quality: 
-IF "%choice%"=="1" SET quality_simple=1& SET AudioQuality=1& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="2" SET quality_simple=1& SET AudioQuality=2& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="3" SET quality_simple=1& SET AudioQuality=3& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="4" SET quality_simple=1& SET AudioQuality=4& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="5" SET quality_simple=1& SET AudioQuality=5& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="6" SET quality_simple=1& SET AudioQuality=6& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="7" SET quality_simple=1& SET AudioQuality=7& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="8" SET quality_simple=1& SET AudioQuality=8& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="9" SET quality_simple=1& SET AudioQuality=9& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="10" SET quality_simple=1& SET AudioQuality=10& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="11" IF "%AudioFormat%"=="mp3" (SET quality_simple=1& SET AudioQuality=320k& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)) ELSE (SET quality_simple=1& SET AudioQuality=0& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="1" SET quality_simple=1& SET AudioQuality=1& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="2" SET quality_simple=1& SET AudioQuality=2& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="3" SET quality_simple=1& SET AudioQuality=3& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="4" SET quality_simple=1& SET AudioQuality=4& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="5" SET quality_simple=1& SET AudioQuality=5& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="6" SET quality_simple=1& SET AudioQuality=6& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="7" SET quality_simple=1& SET AudioQuality=7& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="8" SET quality_simple=1& SET AudioQuality=8& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="9" SET quality_simple=1& SET AudioQuality=9& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="10" SET quality_simple=1& SET AudioQuality=10& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="11" IF "%AudioFormat%"=="mp3" (SET quality_simple=1& SET AudioQuality=320k& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))) ELSE (SET quality_simple=1& SET AudioQuality=0& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio)))
 IF "%choice%"=="w" GOTO :select-format-audio
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -735,19 +849,19 @@ ECHO   %Cyan-s%5%ColorOff%. Quality 5 ^(~192-224 Kbps^) ^(best^)
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Cyan-s%6%ColorOff%. Quality 0 ^(disables VBR, enables CBR^)
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%w%ColorOff%. Go Back
-ECHO   %Cyan-s%r%ColorOff%. Main Menu
+ECHO   %Yellow-s%w%ColorOff%. Go Back
+ECHO   %Yellow-s%r%ColorOff%. Main Menu
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p choice=!BS!%spcs%Select Audio Quality: 
-IF "%choice%"=="1" SET quality_libfdk=1& SET AudioQuality=1& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="2" SET quality_libfdk=1& SET AudioQuality=2& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="3" SET quality_libfdk=1& SET AudioQuality=3& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="4" SET quality_libfdk=1& SET AudioQuality=4& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="5" SET quality_libfdk=1& SET AudioQuality=5& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
-IF "%choice%"=="6" SET quality_libfdk=1& SET AudioQuality=0& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-audio)
+IF "%choice%"=="1" SET quality_libfdk=1& SET AudioQuality=1& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="2" SET quality_libfdk=1& SET AudioQuality=2& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="3" SET quality_libfdk=1& SET AudioQuality=3& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="4" SET quality_libfdk=1& SET AudioQuality=4& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="5" SET quality_libfdk=1& SET AudioQuality=5& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="6" SET quality_libfdk=1& SET AudioQuality=0& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
 IF "%choice%"=="w" GOTO :select-format-audio
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -761,49 +875,45 @@ cls
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Blue-s%•%ColorOff%  AUDIO PRESETS
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%1%ColorOff%. Audio Single					 %Cyan-s%9%ColorOff%. Audio Single + Interpret Title as "Artist - Title"
-ECHO   %Cyan-s%2%ColorOff%. Audio Single + Crop Thumbnail			%Cyan-s%10%ColorOff%. Audio Single + Crop + Interpret Title as "Artist - Title"
-ECHO   %Cyan-s%3%ColorOff%. Audio Single + 10 Top Comments			%Cyan-s%11%ColorOff%. Audio Single + Crop Thumbnail + 10 Top Comments
+ECHO   %Cyan-s%1%ColorOff%. Audio Single					%Cyan-s%12%ColorOff%. Audio Single + Interpret Title as "Artist - Title"
+ECHO   %Cyan-s%2%ColorOff%. Audio Single + Crop Thumbnail			%Cyan-s%13%ColorOff%. Audio Single + Crop + Interpret Title as "Artist - Title"
+ECHO   %Cyan-s%3%ColorOff%. Audio Single + 10 Top Comments			%Cyan-s%14%ColorOff%. Audio Single + Crop Thumbnail + 10 Top Comments
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%4%ColorOff%. Audio Playlist					%Cyan-s%12%ColorOff%. Audio Playlist + Only New
-ECHO   %Cyan-s%5%ColorOff%. Audio Playlist + Crop Thumbnail			%Cyan-s%13%ColorOff%. Audio Playlist + Only New + Crop Thumbnail
-ECHO   %Cyan-s%6%ColorOff%. Audio Playlist Various Artists			%Cyan-s%14%ColorOff%. Audio Playlist Various Artists + Only New
-ECHO   %Cyan-s%7%ColorOff%. Audio Playlist Various Artists + Crop Thumbnail	%Cyan-s%15%ColorOff%. Audio Playlist Various Artists + Crop + Only New
+ECHO   %Cyan-s%4%ColorOff%. Audio Playlist					%Cyan-s%15%ColorOff%. Audio Playlist + Only New
+ECHO   %Cyan-s%5%ColorOff%. Audio Playlist + Crop Thumbnail			%Cyan-s%16%ColorOff%. Audio Playlist + Crop Thumbnail + Only New
+ECHO   %Cyan-s%6%ColorOff%. Audio Playlist Various Artists			%Cyan-s%17%ColorOff%. Audio Playlist Various Artists + Only New
+ECHO   %Cyan-s%7%ColorOff%. Audio Playlist Various Artists + Crop Thumbnail	%Cyan-s%18%ColorOff%. Audio Playlist Various Artists + Crop + Only New
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%8%ColorOff%. Audio + Split by Chapters				%Cyan-s%16%ColorOff%. Audio + Split by Chapters + Crop Thumbnail
+ECHO   %Cyan-s%8%ColorOff%. Download Links From Text List
+ECHO   %Cyan-s%9%ColorOff%. Download Links From Text List + Crop Thumbnail
+ECHO  %Cyan-s%10%ColorOff%. Download Links From Text List + Crop Thumbnail + Interpret Title as "Artist - Title"
+ECHO  %Cyan-s%11%ColorOff%. Download Links From Text List + Crop Thumbnail + Interpret Title as "Artist - Title" + Only New
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%z%ColorOff%. Download Links From Text List
-ECHO   %Cyan-s%x%ColorOff%. Download Links From Text List + Crop Thumbnail
-ECHO   %Cyan-s%c%ColorOff%. Download Links From Text List + Crop Thumbnail + Interpret Title as "Artist - Title"
-ECHO   %Cyan-s%v%ColorOff%. Download Links From Text List + Crop Thumbnail + Only New + Interpret Title as "Artist - Title"
-ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%w%ColorOff%. Go Back
-ECHO   %Cyan-s%r%ColorOff%. Main Menu
+ECHO   %Yellow-s%w%ColorOff%. Go Back
+ECHO   %Yellow-s%r%ColorOff%. Main Menu
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p choice=!BS!%spcs%Choose Preset: 
-IF "%choice%"=="1" GOTO :doYTDL-audio-preset-2
-IF "%choice%"=="2" SET CropThumb=1& GOTO :doYTDL-audio-preset-2
-IF "%choice%"=="3" SET CommentPreset=1& GOTO :doYTDL-audio-preset-2
-IF "%choice%"=="4" GOTO :doYTDL-audio-preset-5
-IF "%choice%"=="5" SET CropThumb=1& GOTO :doYTDL-audio-preset-5
-IF "%choice%"=="6" SET VariousArtists=1& GOTO :doYTDL-audio-preset-5
-IF "%choice%"=="7" SET VariousArtists=1& SET CropThumb=1& GOTO :doYTDL-audio-preset-5
-IF "%choice%"=="8" GOTO :doYTDL-audio-preset-1
-IF "%choice%"=="9" SET FormatTitle=1& GOTO :doYTDL-audio-preset-2
-IF "%choice%"=="10" SET CropThumb=1& SET FormatTitle=1& GOTO :doYTDL-audio-preset-2
-IF "%choice%"=="11" SET CommentPreset=1& SET CropThumb=1& GOTO :doYTDL-audio-preset-2
-IF "%choice%"=="12" SET OnlyNew=1& GOTO :doYTDL-audio-preset-5
-IF "%choice%"=="13" SET CropThumb=1& SET OnlyNew=1& GOTO :doYTDL-audio-preset-5
-IF "%choice%"=="14" SET VariousArtists=1& SET OnlyNew=1& GOTO :doYTDL-audio-preset-5
-IF "%choice%"=="15" SET VariousArtists=1& SET CropThumb=1& SET OnlyNew=1& GOTO :doYTDL-audio-preset-5
-IF "%choice%"=="16" SET CropThumb=1& GOTO :doYTDL-audio-preset-1
-IF "%choice%"=="z" SET DownloadList=1& GOTO :doYTDL-audio-preset-2
-IF "%choice%"=="x" SET DownloadList=1& SET CropThumb=1& GOTO :doYTDL-audio-preset-2
-IF "%choice%"=="c" SET DownloadList=1& SET CropThumb=1& SET FormatTitle=1& GOTO :doYTDL-audio-preset-2
-IF "%choice%"=="v" SET DownloadList=1& SET CropThumb=1& SET FormatTitle=1& SET OnlyNew=1& GOTO :doYTDL-audio-preset-2
+IF "%choice%"=="1" IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=1& GOTO :doYTDL-audio-preset-2) ELSE (GOTO :doYTDL-audio-preset-2)
+IF "%choice%"=="2" SET CropThumb=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=1& GOTO :doYTDL-audio-preset-2) ELSE (GOTO :doYTDL-audio-preset-2)
+IF "%choice%"=="3" SET CommentPreset=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=1& GOTO :doYTDL-audio-preset-2) ELSE (GOTO :doYTDL-audio-preset-2)
+IF "%choice%"=="4" IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=2& GOTO :doYTDL-audio-preset-3) ELSE (GOTO :doYTDL-audio-preset-3)
+IF "%choice%"=="5" SET CropThumb=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=2& GOTO :doYTDL-audio-preset-3) ELSE (GOTO :doYTDL-audio-preset-3)
+IF "%choice%"=="6" SET VariousArtists=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=3& GOTO :doYTDL-audio-preset-3) ELSE (GOTO :doYTDL-audio-preset-3)
+IF "%choice%"=="7" SET VariousArtists=1& SET CropThumb=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=3& GOTO :doYTDL-audio-preset-3) ELSE (GOTO :doYTDL-audio-preset-3)
+IF "%choice%"=="8" SET DownloadList=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=1& GOTO :doYTDL-audio-preset-2) ELSE (GOTO :doYTDL-audio-preset-2)
+IF "%choice%"=="9" SET DownloadList=1& SET CropThumb=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=1& GOTO :doYTDL-audio-preset-2) ELSE (GOTO :doYTDL-audio-preset-2)
+IF "%choice%"=="10" SET DownloadList=1& SET CropThumb=1& SET FormatTitle=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=1& GOTO :doYTDL-audio-preset-2) ELSE (GOTO :doYTDL-audio-preset-2)
+IF "%choice%"=="11" SET DownloadList=1& SET CropThumb=1& SET FormatTitle=1& SET OnlyNew=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=1& GOTO :doYTDL-audio-preset-2) ELSE (GOTO :doYTDL-audio-preset-2)
+IF "%choice%"=="12" SET FormatTitle=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=1& GOTO :doYTDL-audio-preset-2) ELSE (GOTO :doYTDL-audio-preset-2)
+IF "%choice%"=="13" SET CropThumb=1& SET FormatTitle=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=1& GOTO :doYTDL-audio-preset-2) ELSE (GOTO :doYTDL-audio-preset-2)
+IF "%choice%"=="14" SET CommentPreset=1& SET CropThumb=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=1& GOTO :doYTDL-audio-preset-2) ELSE (GOTO :doYTDL-audio-preset-2)
+IF "%choice%"=="15" SET OnlyNew=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=2& GOTO :doYTDL-audio-preset-3) ELSE (GOTO :doYTDL-audio-preset-3)
+IF "%choice%"=="16" SET CropThumb=1& SET OnlyNew=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=2& GOTO :doYTDL-audio-preset-3) ELSE (GOTO :doYTDL-audio-preset-3)
+IF "%choice%"=="17" SET VariousArtists=1& SET OnlyNew=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=3& GOTO :doYTDL-audio-preset-3) ELSE (GOTO :doYTDL-audio-preset-3)
+IF "%choice%"=="18" SET VariousArtists=1& SET CropThumb=1& SET OnlyNew=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=3& GOTO :doYTDL-audio-preset-3) ELSE (GOTO :doYTDL-audio-preset-3)
 IF "%choice%"=="w" IF "%CustomFormatAudio%"=="1" (GOTO :select-format-audio) ELSE (IF "%quality_libfdk%"=="1" (GOTO :select-quality-vbr-audio) ELSE (GOTO :select-quality-audio))
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -837,28 +947,28 @@ ECHO  %Cyan-s%10%ColorOff%. Worst Video		%Cyan-s%14%ColorOff%. ^<720p/mp4/m4a/h2
 ECHO  %Cyan-s%11%ColorOff%. Smallest Size		%Cyan-s%15%ColorOff%. ^<720p/fps^>30
 ECHO  %Cyan-s%12%ColorOff%. Best Codec + Best Bitrate	%Cyan-s%16%ColorOff%. ^<1080p/mp4/m4a
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%w%ColorOff%. Go Back
+ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p choice=!BS!%spcs%Select Video Quality: 
-IF "%choice%"=="1" SET VideoResolution=320& SET VideoFPS=30& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-video)
-IF "%choice%"=="2" SET VideoResolution=480& SET VideoFPS=30& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-video)
-IF "%choice%"=="3" SET VideoResolution=720& SET VideoFPS=30& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-video)
-IF "%choice%"=="4" SET VideoResolution=720& SET VideoFPS=60& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-video)
-IF "%choice%"=="5" SET VideoResolution=1080& SET VideoFPS=30& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-video)
-IF "%choice%"=="6" SET VideoResolution=1080& SET VideoFPS=60& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-video)
-IF "%choice%"=="7" SET VideoResolution=1440& SET VideoFPS=30& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-video)
-IF "%choice%"=="8" SET VideoResolution=1440& SET VideoFPS=60& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-video)
-IF "%choice%"=="9" SET CustomFormatVideo=1& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-video)
-IF "%choice%"=="10" SET CustomFormatVideo=2& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-video)
-IF "%choice%"=="11" SET CustomFormatVideo=3& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-video)
-IF "%choice%"=="12" SET CustomFormatVideo=4& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-video)
-IF "%choice%"=="13" SET CustomFormatVideo=5& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-video)
-IF "%choice%"=="14" SET CustomFormatVideo=6& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-video)
-IF "%choice%"=="15" SET CustomFormatVideo=7& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-video)
-IF "%choice%"=="16" SET CustomFormatVideo=8& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-video)
-IF "%choice%"=="17" SET CustomFormatVideo=9& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (GOTO :select-preset-video)
-IF "%choice%"=="w" IF "%SectionsVideo%"=="1" (GOTO :select-preset-sections) ELSE (GOTO :start)
+IF "%choice%"=="1" SET VideoResolution=320& SET VideoFPS=30& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (GOTO :select-preset-video))
+IF "%choice%"=="2" SET VideoResolution=480& SET VideoFPS=30& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (GOTO :select-preset-video))
+IF "%choice%"=="3" SET VideoResolution=720& SET VideoFPS=30& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (GOTO :select-preset-video))
+IF "%choice%"=="4" SET VideoResolution=720& SET VideoFPS=60& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (GOTO :select-preset-video))
+IF "%choice%"=="5" SET VideoResolution=1080& SET VideoFPS=30& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (GOTO :select-preset-video))
+IF "%choice%"=="6" SET VideoResolution=1080& SET VideoFPS=60& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (GOTO :select-preset-video))
+IF "%choice%"=="7" SET VideoResolution=1440& SET VideoFPS=30& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (GOTO :select-preset-video))
+IF "%choice%"=="8" SET VideoResolution=1440& SET VideoFPS=60& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (GOTO :select-preset-video))
+IF "%choice%"=="9" SET CustomFormatVideo=1& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (GOTO :select-preset-video))
+IF "%choice%"=="10" SET CustomFormatVideo=2& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (GOTO :select-preset-video))
+IF "%choice%"=="11" SET CustomFormatVideo=3& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (GOTO :select-preset-video))
+IF "%choice%"=="12" SET CustomFormatVideo=4& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (GOTO :select-preset-video))
+IF "%choice%"=="13" SET CustomFormatVideo=5& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (GOTO :select-preset-video))
+IF "%choice%"=="14" SET CustomFormatVideo=6& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (GOTO :select-preset-video))
+IF "%choice%"=="15" SET CustomFormatVideo=7& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (GOTO :select-preset-video))
+IF "%choice%"=="16" SET CustomFormatVideo=8& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (GOTO :select-preset-video))
+IF "%choice%"=="17" SET CustomFormatVideo=9& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (GOTO :select-preset-video))
+IF "%choice%"=="w" IF "%SectionsVideo%"=="1" (GOTO :select-preset-sections) ELSE (IF "%SectionsVideo%"=="2" (GOTO :select-preset-sections) ELSE (GOTO :start))
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -872,44 +982,40 @@ cls
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Blue-s%•%ColorOff%  VIDEO PRESETS
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%1%ColorOff%. Video Single					%Cyan-s%8%ColorOff%. Video Single + Crop Thumbnail
-ECHO   %Cyan-s%2%ColorOff%. Video Single + Top Comments			%Cyan-s%9%ColorOff%. Video Single + Top Comments + Crop Thumbnail
+ECHO   %Cyan-s%1%ColorOff%. Video Single					%Cyan-s%10%ColorOff%. Video Single + Crop Thumbnail
+ECHO   %Cyan-s%2%ColorOff%. Video Single + Top Comments			%Cyan-s%11%ColorOff%. Video Single + Top Comments + Crop Thumbnail
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%3%ColorOff%. Video Playlist					%Cyan-s%10%ColorOff%. Video Playlist + Only New
-ECHO   %Cyan-s%4%ColorOff%. Video Playlist + Crop Thumbnail			%Cyan-s%11%ColorOff%. Video Playlist + Crop Thumbnail + Only New
-ECHO   %Cyan-s%5%ColorOff%. Video Playlist + Top Comments			%Cyan-s%12%ColorOff%. Video Playlist + Top Comments + Only New
-ECHO   %Cyan-s%6%ColorOff%. Video Playlist + Top Comments + Crop Thumbnail	%Cyan-s%13%ColorOff%. Video Playlist + Top Comments + Crop + Only New
+ECHO   %Cyan-s%3%ColorOff%. Video Playlist					%Cyan-s%12%ColorOff%. Video Playlist + Only New
+ECHO   %Cyan-s%4%ColorOff%. Video Playlist + Crop Thumbnail			%Cyan-s%13%ColorOff%. Video Playlist + Crop Thumbnail + Only New
+ECHO   %Cyan-s%5%ColorOff%. Video Playlist + Top Comments			%Cyan-s%14%ColorOff%. Video Playlist + Top Comments + Only New
+ECHO   %Cyan-s%6%ColorOff%. Video Playlist + Top Comments + Crop Thumbnail	%Cyan-s%15%ColorOff%. Video Playlist + Top Comments + Crop + Only New
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%7%ColorOff%. Video + Split by Chapters				%Cyan-s%14%ColorOff%. Video + Split by Chapters + Crop Thumbnail
+ECHO   %Cyan-s%7%ColorOff%. Download Links From Text List
+ECHO   %Cyan-s%8%ColorOff%. Download Links From Text List + Crop Thumbnail
+ECHO   %Cyan-s%9%ColorOff%. Download Links From Text List + Crop Thumbnail + Only New
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%z%ColorOff%. Download Links From Text List
-ECHO   %Cyan-s%x%ColorOff%. Download Links From Text List + Crop Thumbnail
-ECHO   %Cyan-s%c%ColorOff%. Download Links From Text List + Crop Thumbnail + Only New
-ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%w%ColorOff%. Go Back
-ECHO   %Cyan-s%r%ColorOff%. Main Menu
+ECHO   %Yellow-s%w%ColorOff%. Go Back
+ECHO   %Yellow-s%r%ColorOff%. Main Menu
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p choice=!BS!%spcs%Choose Preset: 
 IF "%choice%"=="1" GOTO :doYTDL-video-preset-2
 IF "%choice%"=="2" SET CommentPreset=1& GOTO :doYTDL-video-preset-2
-IF "%choice%"=="3" GOTO :doYTDL-video-preset-4
-IF "%choice%"=="4" SET CropThumb=1& GOTO :doYTDL-video-preset-4
-IF "%choice%"=="5" SET CommentPreset=1& GOTO :doYTDL-video-preset-4
-IF "%choice%"=="6" SET CommentPreset=1& SET CropThumb=1& GOTO :doYTDL-video-preset-4
-IF "%choice%"=="7" GOTO :doYTDL-video-preset-1
-IF "%choice%"=="8" SET CropThumb=1& GOTO :doYTDL-video-preset-2
-IF "%choice%"=="9" SET CommentPreset=1& SET CropThumb=1& GOTO :doYTDL-video-preset-2
-IF "%choice%"=="10" SET OnlyNew=1& GOTO :doYTDL-video-preset-4
-IF "%choice%"=="11" SET OnlyNew=1& SET CropThumb=1& GOTO :doYTDL-video-preset-4
-IF "%choice%"=="12" SET CommentPreset=1& SET OnlyNew=1& GOTO :doYTDL-video-preset-4
-IF "%choice%"=="13" SET CommentPreset=1& SET OnlyNew=1& SET CropThumb=1& GOTO :doYTDL-video-preset-4
-IF "%choice%"=="14" SET CropThumb=1& GOTO :doYTDL-video-preset-1
-IF "%choice%"=="z" SET DownloadList=1& GOTO :doYTDL-video-preset-2
-IF "%choice%"=="x" SET DownloadList=1& SET CropThumb=1& GOTO :doYTDL-video-preset-2
-IF "%choice%"=="c" SET DownloadList=1& SET CropThumb=1& SET OnlyNew=1& GOTO :doYTDL-video-preset-2
+IF "%choice%"=="3" GOTO :doYTDL-video-preset-3
+IF "%choice%"=="4" SET CropThumb=1& GOTO :doYTDL-video-preset-3
+IF "%choice%"=="5" SET CommentPreset=1& GOTO :doYTDL-video-preset-3
+IF "%choice%"=="6" SET CommentPreset=1& SET CropThumb=1& GOTO :doYTDL-video-preset-3
+IF "%choice%"=="7" SET DownloadList=1& GOTO :doYTDL-video-preset-2
+IF "%choice%"=="8" SET DownloadList=1& SET CropThumb=1& GOTO :doYTDL-video-preset-2
+IF "%choice%"=="9" SET DownloadList=1& SET CropThumb=1& SET OnlyNew=1& GOTO :doYTDL-video-preset-2
+IF "%choice%"=="10" SET CropThumb=1& GOTO :doYTDL-video-preset-2
+IF "%choice%"=="11" SET CommentPreset=1& SET CropThumb=1& GOTO :doYTDL-video-preset-2
+IF "%choice%"=="12" SET OnlyNew=1& GOTO :doYTDL-video-preset-3
+IF "%choice%"=="13" SET OnlyNew=1& SET CropThumb=1& GOTO :doYTDL-video-preset-3
+IF "%choice%"=="14" SET CommentPreset=1& SET OnlyNew=1& GOTO :doYTDL-video-preset-3
+IF "%choice%"=="15" SET CommentPreset=1& SET OnlyNew=1& SET CropThumb=1& GOTO :doYTDL-video-preset-3
 IF "%choice%"=="w" GOTO :select-format-video
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -931,13 +1037,19 @@ ECHO   %Blue-s%•%ColorOff%  PRESETS
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Cyan-s%1%ColorOff%. Download Subtitles
 ECHO   %Cyan-s%2%ColorOff%. Download Transcript
+IF "%use_pl_srtfixer%"=="1" (
+ECHO   %Cyan-s%3%ColorOff%. Download Autosubs + SRT_fix
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%w%ColorOff%. Go Back
+) ELSE (
+ECHO ------------------------------------------------------------------------------------------------------------------------
+)
+ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p choice=!BS!%spcs%Choose Preset: 
 IF "%choice%"=="1" SET SubsPreset=1& GOTO :subs-preset-1
 IF "%choice%"=="2" SET SubsPreset=2& GOTO :subs-preset-1
+IF "%choice%"=="3" SET SubsPreset=3& GOTO :subs-preset-1
 IF "%choice%"=="w" GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -971,7 +1083,7 @@ ECHO  %Cyan-s%10%ColorOff%.  500 Comments Sorted by NEW and Converted to HTML	%C
 ECHO  %Cyan-s%11%ColorOff%.  ALL Comments Sorted by NEW
 ECHO  %Cyan-s%12%ColorOff%.  ALL Comments Sorted by NEW and Converted to HTML
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%w%ColorOff%. Go Back
+ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p choice=!BS!%spcs%Choose Preset: 
@@ -1011,7 +1123,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Cyan-s%1%ColorOff%. Stream Audio
 ECHO   %Cyan-s%2%ColorOff%. Stream Video
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%w%ColorOff%. Go Back
+ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p choice=!BS!%spcs%Enter Your Choice: 
@@ -1033,15 +1145,15 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Cyan-s%1%ColorOff%. Best Audio
 ECHO   %Cyan-s%2%ColorOff%. Best Audio + Best Protocol
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%w%ColorOff%. Go Back
-ECHO   %Cyan-s%r%ColorOff%. Main Menu
+ECHO   %Yellow-s%w%ColorOff%. Go Back
+ECHO   %Yellow-s%r%ColorOff%. Main Menu
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p choice=!BS!%spcs%Enter Your Choice: 
 IF "%choice%"=="1" SET StreamVideoFormat=& SET StreamAudioFormat=1& GOTO :doYTDL-preset-stream-1
 IF "%choice%"=="2" SET StreamVideoFormat=& SET StreamAudioFormat=2& GOTO :doYTDL-preset-stream-1
 IF "%choice%"=="w" GOTO :select-format-stream
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -1059,8 +1171,8 @@ ECHO   %Cyan-s%2%ColorOff%. ^<720p/^<%Red-s%60%ColorOff%fps
 ECHO   %Cyan-s%3%ColorOff%. Best Video + Best Audio
 ECHO   %Cyan-s%4%ColorOff%. Best Video + Best Protocol
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%w%ColorOff%. Go Back
-ECHO   %Cyan-s%r%ColorOff%. Main Menu
+ECHO   %Yellow-s%w%ColorOff%. Go Back
+ECHO   %Yellow-s%r%ColorOff%. Main Menu
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p choice=!BS!%spcs%Enter Your Choice: 
@@ -1069,7 +1181,7 @@ IF "%choice%"=="2" SET StreamAudioFormat=& SET StreamVideoFormat=2& GOTO :doYTDL
 IF "%choice%"=="3" SET StreamAudioFormat=& SET StreamVideoFormat=3& GOTO :doYTDL-preset-stream-1
 IF "%choice%"=="4" SET StreamAudioFormat=& SET StreamVideoFormat=4& GOTO :doYTDL-preset-stream-1
 IF "%choice%"=="w" GOTO :select-format-stream
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -1084,22 +1196,40 @@ GOTO :select-quality-video-stream
 ::
 
 :select-preset-sections
+SET Downloaded-Sections=& SET SectionsAudio=& SET SectionsVideo=& SET CropThumb=& SET CustomChapters=
 cls
-SET Downloaded-Sections=
-SET SectionsAudio=
-SET SectionsVideo=
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Blue-s%•%ColorOff%  FORMAT
+ECHO   %Blue-s%•%ColorOff%  SECTION DOWNLOAD PRESETS
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%1%ColorOff%. Download Audio Sections
-ECHO   %Cyan-s%2%ColorOff%. Download Video Sections
+ECHO   %Cyan-s%1%ColorOff%. Download Audio Sections			     %Cyan-s%5%ColorOff%. Download Audio Sections + Crop Thumbnail
+ECHO   %Cyan-s%2%ColorOff%. Download Video Sections			     %Cyan-s%6%ColorOff%. Download Video Sections + Crop Thumbnail
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%w%ColorOff%. Go Back
+ECHO   %Cyan-s%3%ColorOff%. Download Audio + Split by Chapters		     %Cyan-s%7%ColorOff%. Download Audio + Split by Chapters + Crop Thumbnail
+ECHO   %Cyan-s%4%ColorOff%. Download Video + Split by Chapters		     %Cyan-s%8%ColorOff%. Download Video + Split by Chapters + Crop Thumbnail
+IF "%use_pl_customchapters%"=="1" (
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Cyan-s%9%ColorOff%. Download Audio + Split by Custom Chapters	    %Cyan-s%11%ColorOff%. Download Audio + Split by Custom Chapters + Crop Thumbnail
+ECHO  %Cyan-s%10%ColorOff%. Download Video + Split by Custom Chapters	    %Cyan-s%12%ColorOff%. Download Video + Split by Custom Chapters + Crop Thumbnail
+ECHO ------------------------------------------------------------------------------------------------------------------------
+) ELSE (
+ECHO ------------------------------------------------------------------------------------------------------------------------
+)
+ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=!BS!%spcs%Enter Your Choice: 
+SET /p choice=!BS!%spcs%Select Section Download Preset: 
 IF "%choice%"=="1" SET SectionsAudio=1& GOTO :select-format-audio
 IF "%choice%"=="2" SET SectionsVideo=1& GOTO :select-format-video
+IF "%choice%"=="3" SET SectionsAudio=2& GOTO :select-format-audio
+IF "%choice%"=="4" SET SectionsVideo=2& GOTO :select-format-video
+IF "%choice%"=="5" SET SectionsAudio=1& SET CropThumb=1& GOTO :select-format-audio
+IF "%choice%"=="6" SET SectionsVideo=1& SET CropThumb=1& GOTO :select-format-video
+IF "%choice%"=="7" SET SectionsAudio=2& SET CropThumb=1& GOTO :select-format-audio
+IF "%choice%"=="8" SET SectionsVideo=2& SET CropThumb=1& GOTO :select-format-video
+IF "%choice%"=="9" SET CustomChapters=1& SET SectionsAudio=2& GOTO :select-format-audio
+IF "%choice%"=="10" SET CustomChapters=1& SET SectionsVideo=2& GOTO :select-format-video
+IF "%choice%"=="11" SET CustomChapters=1& SET SectionsAudio=2& SET CropThumb=1& GOTO :select-format-audio
+IF "%choice%"=="12" SET CustomChapters=1& SET SectionsVideo=2& SET CropThumb=1& GOTO :select-format-video
 IF "%choice%"=="w" GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -1124,8 +1254,8 @@ ECHO   %Cyan-s%8%ColorOff%. Set 8 Sections
 ECHO   %Cyan-s%9%ColorOff%. Set 9 Sections
 ECHO  %Cyan-s%10%ColorOff%. Set 10 Sections
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%w%ColorOff%. Go Back
-ECHO   %Cyan-s%r%ColorOff%. Main Menu
+ECHO   %Yellow-s%w%ColorOff%. Go Back
+ECHO   %Yellow-s%r%ColorOff%. Main Menu
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p choice=!BS!%spcs%Enter Your Choice: 
@@ -1140,7 +1270,7 @@ IF "%choice%"=="8" SET DoSections=8& GOTO :enter-sections-8
 IF "%choice%"=="9" SET DoSections=9& GOTO :enter-sections-9
 IF "%choice%"=="10" SET DoSections=10& GOTO :enter-sections-10
 IF "%choice%"=="w" IF "%SectionsVideo%"=="1" (GOTO :select-format-video) ELSE (IF "%CustomFormatAudio%"=="1" (GOTO :select-format-audio) ELSE (IF "%quality_libfdk%"=="1" (GOTO :select-quality-vbr-audio) ELSE (IF "%quality_simple%"=="1" (GOTO :select-quality-audio) ELSE (GOTO :select-preset-sections))))
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -1236,23 +1366,30 @@ SET  OutTemplate= --path "%TargetFolder%" --output "thumbnail:%TargetFolder%\%%(
 SET      Options= --ignore-errors --ignore-config
 SET      Network= --add-headers "User-Agent:%User-Agent%"
 SET  GeoRestrict= --xff "default"
+IF "%CustomChapters%"=="1" (
+SET       Select= --no-download-archive --no-playlist --split-chapters --extractor-args "youtube:chapters_file=%Chapters-Path%"
+) ELSE (
 SET       Select= --no-download-archive --no-playlist --split-chapters
+)
 IF "%usearia%"=="1" (
 SET     Download= --limit-rate %SpeedLimit% --downloader "%Aria2-Path%" --downloader-args "aria2c: %Aria-Args%" --compat-options no-external-downloader-progress
 ) ELSE (
 SET     Download= --limit-rate %SpeedLimit% --concurrent-fragments %Threads%
 )
+SET Sponsorblock= --no-sponsorblock
+SET   FileSystem= --no-cache-dir --no-mtime --no-part --ffmpeg-location "%FFmpeg-Path%"
 :: --embed-thumbnail with --split-chapters is broken https://github.com/yt-dlp/yt-dlp/issues/6225
 IF "%CropThumb%"=="1" (
 SET    Thumbnail= --no-embed-thumbnail --write-thumbnail --exec "after_move:\"%FFmpeg-Path%\" -v quiet -i \"%TargetFolder%\\%%^(title^)s\\cover.webp\" -y -c:v mjpeg -q:v 3 -vf crop=\"'if^(gt^(ih,iw^),iw,ih^)':'if^(gt^(iw,ih^),ih,iw^)'\" \"%TargetFolder%\\%%^(title^)s\\cover.%Thumb-Format%\"" --exec "after_move:del /q \"%TargetFolder%\\%%^(title^)s\\cover.webp\""
 ) ELSE (
 SET    Thumbnail= --no-embed-thumbnail --write-thumbnail --convert-thumbnail %Thumb-Format% --postprocessor-args "ThumbnailsConvertor:-q:v %Thumb-Compress%"
 )
-SET Sponsorblock= --no-sponsorblock
-SET   FileSystem= --no-cache-dir --no-mtime --no-part --ffmpeg-location "%FFmpeg-Path%"
-
 SET    Verbosity= --console-title --progress --progress-template ["Progress":" %%(progress._percent_str)s","Total Bytes":" %%(progress._total_bytes_str)s","Speed":" %%(progress._speed_str)s","ETA":" %%(progress._eta_str)s"]
+IF "%use_pl_returnyoutubedislike%"=="1" (
+SET  WorkArounds= --use-postprocessor ReturnYoutubeDislike:when=pre_process
+) ELSE (
 SET  WorkArounds=
+)
 IF "%CustomFormat-opus%"=="1" (
 SET       Format= --extract-audio --format "774/251/250/249" --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-m4a%"=="1" (
@@ -1323,7 +1460,11 @@ SET    Thumbnail= --embed-thumbnail --postprocessor-args "ThumbnailsConvertor+ff
 SET    Thumbnail= --embed-thumbnail --convert-thumbnail %Thumb-Format% --postprocessor-args "ThumbnailsConvertor:-q:v %Thumb-Compress%"
 )
 SET    Verbosity= --console-title --progress --progress-template ["Progress":" %%(progress._percent_str)s","Total Bytes":" %%(progress._total_bytes_str)s","Speed":" %%(progress._speed_str)s","ETA":" %%(progress._eta_str)s"]
+IF "%use_pl_returnyoutubedislike%"=="1" (
+SET  WorkArounds= --use-postprocessor ReturnYoutubeDislike:when=pre_process
+) ELSE (
 SET  WorkArounds=
+)
 IF "%CustomFormat-opus%"=="1" (
 SET       Format= --extract-audio --format "774/251/250/249" --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-m4a%"=="1" (
@@ -1368,12 +1509,20 @@ SET   PreProcess= --parse-metadata "title:%%(artist)s - %%(title)s" --parse-meta
 ) ELSE (
 SET   PreProcess= --parse-metadata "%%(epoch>%%Y-%%m-%%d)s:%%(meta_download_date)s" --parse-metadata "%%(album,playlist_title)s:%%(meta_album)s" --parse-metadata "%%(album_artist,album_artists,uploader)s:%%(meta_album_artist)s" --parse-metadata "%%(artist,artists.0,creator,uploader)s:%%(meta_artist)s" --parse-metadata "%%(average_rating)s:%%(meta_rating)s" --parse-metadata "%%(composer,composers)s:%%(meta_composer)s" --parse-metadata "%%(disc_number)s:%%(meta_disc)s" --parse-metadata "%%(dislike_count)s:%%(meta_dislikes)s" --parse-metadata "%%(genre,genres)s:%%(meta_genre)s" --parse-metadata "%%(like_count)s:%%(meta_likes)s" --parse-metadata "%%(playlist_index,track_number|01)s:%%(meta_track)s" --parse-metadata "%%(release_date>%%Y-%%m-%%d,release_year,upload_date>%%Y-%%m-%%d)s:%%(meta_date)s" --parse-metadata "%%(view_count)s:%%(meta_views)s" --parse-metadata ":(?P<meta_longdescription>)" --parse-metadata ":(?P<meta_synopsis>)" --parse-metadata ":(?P<meta_encodersettings>)" --parse-metadata ":(?P<meta_purl>)" --parse-metadata "webpage_url:%%(meta_www)s" --replace-in-metadata meta_album_artist " - Topic" "" --replace-in-metadata meta_date "^NA$" "" --replace-in-metadata meta_rating "^NA$" "" --replace-in-metadata meta_views "^NA$" "" --replace-in-metadata meta_likes "^NA$" "" --replace-in-metadata meta_dislikes "^NA$" "" --replace-in-metadata meta_disc "^NA$" "" --replace-in-metadata meta_encodersettings "^.*$" "" --replace-in-metadata meta_composer "^NA$" "" --replace-in-metadata meta_album "^NA$" "" --replace-in-metadata meta_genre "^NA$" "" --replace-in-metadata title "/" "⁄" --replace-in-metadata title ":" "꞉" --replace-in-metadata album "/" "⁄" --replace-in-metadata album ":" "꞉"
 )
+IF "%ReplayGainPreset%"=="1" (
+SET  PostProcess= --embed-metadata --compat-options no-attach-info-json --use-postprocessor ReplayGain:when=after_move
+) ELSE (IF "%ReplayGainPreset%"=="2" (
+SET  PostProcess= --embed-metadata --compat-options no-attach-info-json --use-postprocessor ReplayGain:when=playlist
+) ELSE (IF "%ReplayGainPreset%"=="3" (
+SET  PostProcess= --embed-metadata --compat-options no-attach-info-json --use-postprocessor "ReplayGain:when=playlist;no_album=true"
+) ELSE (
 SET  PostProcess= --embed-metadata --compat-options no-attach-info-json
+)))
 :: setting variables for continue menu
 SET Downloaded-Video=& SET Downloaded-Audio=1& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET Downloaded-Quick=& GOTO :doYTDL
 
 :: AUDIO PLAYLIST PRESET
-:doYTDL-audio-preset-5
+:doYTDL-audio-preset-3
 IF "%VariousArtists%"=="1" (
 SET  OutTemplate= --output "%TargetFolder%\%%(uploader)s\%%(album,playlist_title,playlist|)s\%%(playlist_index,meta_track,autonumber)02d. %%(artist,artists,creator,uploader)s - %%(title)s.%%(ext)s"
 ) ELSE (
@@ -1400,7 +1549,11 @@ SET    Thumbnail= --embed-thumbnail --postprocessor-args "ThumbnailsConvertor+ff
 SET    Thumbnail= --embed-thumbnail --convert-thumbnail %Thumb-Format% --postprocessor-args "ThumbnailsConvertor:-q:v %Thumb-Compress%"
 )
 SET    Verbosity= --console-title --progress --progress-template ["Progress":" %%(progress._percent_str)s","Total Bytes":" %%(progress._total_bytes_str)s","Speed":" %%(progress._speed_str)s","ETA":" %%(progress._eta_str)s"]
+IF "%use_pl_returnyoutubedislike%"=="1" (
+SET  WorkArounds= --use-postprocessor ReturnYoutubeDislike:when=pre_process
+) ELSE (
 SET  WorkArounds=
+)
 IF "%CustomFormat-opus%"=="1" (
 SET       Format= --extract-audio --format "774/251/250/249" --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-m4a%"=="1" (
@@ -1437,7 +1590,15 @@ SET   PreProcess= --parse-metadata "title:%%(artist)s - %%(title)s" --parse-meta
 ) ELSE (
 SET   PreProcess= --parse-metadata "%%(epoch>%%Y-%%m-%%d)s:%%(meta_download_date)s" --parse-metadata "%%(album,playlist_title)s:%%(meta_album)s" --parse-metadata "%%(album_artist,album_artists,uploader)s:%%(meta_album_artist)s" --parse-metadata "%%(artist,artists.0,creator,uploader)s:%%(meta_artist)s" --parse-metadata "%%(average_rating)s:%%(meta_rating)s" --parse-metadata "%%(composer,composers)s:%%(meta_composer)s" --parse-metadata "%%(disc_number)s:%%(meta_disc)s" --parse-metadata "%%(dislike_count)s:%%(meta_dislikes)s" --parse-metadata "%%(genre,genres)s:%%(meta_genre)s" --parse-metadata "%%(like_count)s:%%(meta_likes)s" --parse-metadata "%%(playlist_index,track_number|01)s:%%(meta_track)s" --parse-metadata "%%(release_date>%%Y-%%m-%%d,release_year,upload_date>%%Y-%%m-%%d)s:%%(meta_date)s" --parse-metadata "%%(view_count)s:%%(meta_views)s" --parse-metadata ":(?P<meta_longdescription>)" --parse-metadata ":(?P<meta_synopsis>)" --parse-metadata ":(?P<meta_encodersettings>)" --parse-metadata ":(?P<meta_purl>)" --parse-metadata "webpage_url:%%(meta_www)s" --replace-in-metadata meta_album_artist " - Topic" "" --replace-in-metadata meta_date "^NA$" "" --replace-in-metadata meta_rating "^NA$" "" --replace-in-metadata meta_views "^NA$" "" --replace-in-metadata meta_likes "^NA$" "" --replace-in-metadata meta_dislikes "^NA$" "" --replace-in-metadata meta_disc "^NA$" "" --replace-in-metadata meta_encodersettings "^.*$" "" --replace-in-metadata meta_composer "^NA$" "" --replace-in-metadata meta_album "^NA$" "" --replace-in-metadata meta_genre "^NA$" "" --replace-in-metadata title "/" "⁄" --replace-in-metadata title ":" "꞉" --replace-in-metadata album "/" "⁄" --replace-in-metadata album ":" "꞉"
 )
+IF "%ReplayGainPreset%"=="1" (
+SET  PostProcess= --embed-metadata --compat-options no-attach-info-json --use-postprocessor ReplayGain:when=after_move
+) ELSE (IF "%ReplayGainPreset%"=="2" (
+SET  PostProcess= --embed-metadata --compat-options no-attach-info-json --use-postprocessor ReplayGain:when=playlist
+) ELSE (IF "%ReplayGainPreset%"=="3" (
+SET  PostProcess= --embed-metadata --compat-options no-attach-info-json --use-postprocessor "ReplayGain:when=playlist;no_album=true"
+) ELSE (
 SET  PostProcess= --embed-metadata --compat-options no-attach-info-json
+)))
 :: setting variables for continue menu
 SET Downloaded-Video=& SET Downloaded-Audio=1& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET Downloaded-Quick=& GOTO :doYTDL
 
@@ -1453,7 +1614,11 @@ SET  OutTemplate= --path "%TargetFolder%" --output "thumbnail:%TargetFolder%\%%(
 SET      Options= --ignore-errors --ignore-config
 SET      Network= --add-headers "User-Agent:%User-Agent%"
 SET  GeoRestrict= --xff "default"
+IF "%CustomChapters%"=="1" (
+SET       Select= --no-download-archive --no-playlist --split-chapters --extractor-args "youtube:chapters_file=%Chapters-Path%"
+) ELSE (
 SET       Select= --no-download-archive --no-playlist --split-chapters
+)
 IF "%usearia%"=="1" (
 SET     Download= --limit-rate %SpeedLimit% --downloader "%Aria2-Path%" --downloader-args "aria2c: %Aria-Args%" --compat-options no-external-downloader-progress
 ) ELSE (
@@ -1467,7 +1632,11 @@ SET    Thumbnail= --no-embed-thumbnail --write-thumbnail --exec "after_move:\"%F
 SET    Thumbnail= --no-embed-thumbnail --write-thumbnail --convert-thumbnail %Thumb-Format% --postprocessor-args "ThumbnailsConvertor:-q:v %Thumb-Compress%"
 )
 SET    Verbosity= --console-title --progress --progress-template ["Progress":" %%(progress._percent_str)s","Total Bytes":" %%(progress._total_bytes_str)s","Speed":" %%(progress._speed_str)s","ETA":" %%(progress._eta_str)s"]
+IF "%use_pl_returnyoutubedislike%"=="1" (
+SET  WorkArounds= --use-postprocessor ReturnYoutubeDislike:when=pre_process
+) ELSE (
 SET  WorkArounds=
+)
 IF "%CustomFormatVideo%"=="1" (
 SET       Format= --format "bv*+ba/b" --merge-output-format mkv --remux-video mkv
 ) ELSE (IF "%CustomFormatVideo%"=="2" (
@@ -1531,7 +1700,11 @@ SET    Thumbnail= --embed-thumbnail --postprocessor-args "ThumbnailsConvertor+ff
 SET    Thumbnail= --embed-thumbnail --convert-thumbnail %Thumb-Format% --postprocessor-args "ThumbnailsConvertor:-q:v %Thumb-Compress%"
 )
 SET    Verbosity= --console-title --progress --progress-template ["Progress":" %%(progress._percent_str)s","Total Bytes":" %%(progress._total_bytes_str)s","Speed":" %%(progress._speed_str)s","ETA":" %%(progress._eta_str)s"]
+IF "%use_pl_returnyoutubedislike%"=="1" (
+SET  WorkArounds= --use-postprocessor ReturnYoutubeDislike:when=pre_process
+) ELSE (
 SET  WorkArounds=
+)
 IF "%CustomFormatVideo%"=="1" (
 SET       Format= --format "bv*+ba/b" --merge-output-format mkv --remux-video mkv
 ) ELSE (IF "%CustomFormatVideo%"=="2" (
@@ -1575,7 +1748,7 @@ SET  PostProcess= --embed-metadata --embed-chapters --embed-subs --compat-option
 SET Downloaded-Video=1& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET Downloaded-Quick=& GOTO :doYTDL
 
 :: VIDEO PLAYLIST PRESET
-:doYTDL-video-preset-4
+:doYTDL-video-preset-3
 SET  OutTemplate= --output "%TargetFolder%\%%(uploader)s\%%(release_year,release_date>%%Y,upload_date>%%Y)s - %%(album,playlist_title,playlist|)s\%%(playlist_index,meta_track,autonumber)02d. %%(title)s.%%(ext)s"
 SET      Options= --ignore-errors --ignore-config
 SET      Network= --add-headers "User-Agent:%User-Agent%"
@@ -1598,7 +1771,11 @@ SET    Thumbnail= --embed-thumbnail --postprocessor-args "ThumbnailsConvertor+ff
 SET    Thumbnail= --embed-thumbnail --convert-thumbnail %Thumb-Format% --postprocessor-args "ThumbnailsConvertor:-q:v %Thumb-Compress%"
 )
 SET    Verbosity= --console-title --progress --progress-template ["Progress":" %%(progress._percent_str)s","Total Bytes":" %%(progress._total_bytes_str)s","Speed":" %%(progress._speed_str)s","ETA":" %%(progress._eta_str)s"]
+IF "%use_pl_returnyoutubedislike%"=="1" (
+SET  WorkArounds= --use-postprocessor ReturnYoutubeDislike:when=pre_process
+) ELSE (
 SET  WorkArounds=
+)
 IF "%CustomFormatVideo%"=="1" (
 SET       Format= --format "bv*+ba/b" --merge-output-format mkv --remux-video mkv
 ) ELSE (IF "%CustomFormatVideo%"=="2" (
@@ -1669,7 +1846,9 @@ IF "%SubsPreset%"=="1" (
 SET     Subtitle= --write-subs --write-auto-subs --sub-format "%Sub-Format%" --sub-langs "%Sub-langs%" --compat-options no-live-chat
 ) ELSE (IF "%SubsPreset%"=="2" (
 SET     Subtitle= --write-subs --write-auto-subs --sub-format ttml --convert-subs srt --sub-langs "%Sub-langs%" --compat-options no-live-chat
-))
+) ELSE (IF "%SubsPreset%"=="3" (
+SET     Subtitle= --sub-langs "%Sub-langs%" --write-auto-subs --write-subs --convert-subs srt --use-postprocessor srt_fix:when=before_dl --compat-options no-live-chat
+)))
 SET     Comments=
 IF "%usecookies%"=="1" (
 SET Authenticate= --cookies "%Cookies-Path%"
@@ -1856,7 +2035,11 @@ SET    Thumbnail= --embed-thumbnail --postprocessor-args "ThumbnailsConvertor+ff
 SET    Thumbnail= --embed-thumbnail --convert-thumbnail %Thumb-Format% --postprocessor-args "ThumbnailsConvertor:-q:v %Thumb-Compress%"
 )
 SET    Verbosity= --console-title --progress --progress-template ["Progress":" %%(progress._percent_str)s","Total Bytes":" %%(progress._total_bytes_str)s","Speed":" %%(progress._speed_str)s","ETA":" %%(progress._eta_str)s"]
+IF "%use_pl_returnyoutubedislike%"=="1" (
+SET  WorkArounds= --use-postprocessor ReturnYoutubeDislike:when=pre_process
+) ELSE (
 SET  WorkArounds=
+)
 IF "%CustomFormat-opus%"=="1" (
 SET       Format= --extract-audio --format "774/251/250/249" --audio-format %AudioFormat%
 ) ELSE (IF "%CustomFormat-m4a%"=="1" (
@@ -1909,7 +2092,7 @@ SET Authenticate=
 )
 SET    AdobePass=
 SET   PreProcess= --parse-metadata "%%(epoch>%%Y-%%m-%%d)s:%%(meta_download_date)s" --parse-metadata "%%(album,playlist_title)s:%%(meta_album)s" --parse-metadata "%%(album_artist,album_artists,uploader)s:%%(meta_album_artist)s" --parse-metadata "%%(artist,artists,creator,uploader)s:%%(meta_artist)s" --parse-metadata "%%(average_rating)s:%%(meta_rating)s" --parse-metadata "%%(composer,composers)s:%%(meta_composer)s" --parse-metadata "%%(disc_number)s:%%(meta_disc)s" --parse-metadata "%%(dislike_count)s:%%(meta_dislikes)s" --parse-metadata "%%(genre,genres)s:%%(meta_genre)s" --parse-metadata "%%(like_count)s:%%(meta_likes)s" --parse-metadata "%%(playlist_index,track_number|01)s:%%(meta_track)s" --parse-metadata "%%(release_date>%%Y-%%m-%%d,release_year,upload_date>%%Y-%%m-%%d)s:%%(meta_date)s" --parse-metadata "%%(view_count)s:%%(meta_views)s" --parse-metadata ":(?P<meta_longdescription>)" --parse-metadata ":(?P<meta_synopsis>)" --parse-metadata ":(?P<meta_encodersettings>)" --parse-metadata ":(?P<meta_purl>)" --parse-metadata "webpage_url:%%(meta_www)s" --replace-in-metadata meta_album_artist " - Topic" "" --replace-in-metadata meta_date "^NA$" "" --replace-in-metadata meta_rating "^NA$" "" --replace-in-metadata meta_views "^NA$" "" --replace-in-metadata meta_likes "^NA$" "" --replace-in-metadata meta_dislikes "^NA$" "" --replace-in-metadata meta_disc "^NA$" "" --replace-in-metadata meta_encodersettings "^.*$" "" --replace-in-metadata meta_composer "^NA$" "" --replace-in-metadata meta_album "^NA$" "" --replace-in-metadata meta_genre "^NA$" "" --replace-in-metadata title "/" "⁄" --replace-in-metadata title ":" "꞉" --replace-in-metadata album "/" "⁄" --replace-in-metadata album ":" "꞉"
-SET PostProcess= --embed-metadata --compat-options no-attach-info-json --force-keyframes-at-cuts
+SET  PostProcess= --embed-metadata --compat-options no-attach-info-json --force-keyframes-at-cuts
 :: setting variables for continue menu
 SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET Downloaded-Stream=& SET Downloaded-Sections=1& SET Downloaded-Quick=& GOTO :doYTDL-sections
 
