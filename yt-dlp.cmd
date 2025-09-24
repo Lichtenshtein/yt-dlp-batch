@@ -135,7 +135,7 @@ SET     Python-Path=B:\Python\python.exe
 SET      Paste-Path=B:\paste\paste.exe
 SET   A-Player-Path=B:\Aimp\aimp.exe
 SET   V-Player-Path=B:\PotPlayer\PotPlayer.exe
-SET  	 Aria2-Path=B:\aria2c\aria2c.exe
+SET  	   Aria2-Path=B:\aria2c\aria2c.exe
 SET        Sed-Path=B:\git-for-windows\usr\bin\sed.exe
 SET         tr-Path=B:\git-for-windows\usr\bin\tr.exe
 SET   truncate-Path=B:\git-for-windows\usr\bin\truncate.exe
@@ -2331,3 +2331,4 @@ ECHO ---------------------------------------------------------------------------
 timeout /t 3 >nul
 EXIT /B 0
 )
+
