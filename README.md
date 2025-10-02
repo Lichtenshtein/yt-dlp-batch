@@ -1,4 +1,4 @@
-# yt-dlp.cmd v1.6
+# yt-dlp.cmd v1.7
 
 A batch (cmd) file made to simplify the usage of yt-dlp on Windows.  
 
