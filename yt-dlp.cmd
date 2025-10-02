@@ -157,6 +157,10 @@ SET          Sub-Format=srt/vtt/ass/best
 SET          User-Agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0
 SET     YTdlp-Cache-Dir=%TEMP%\yt-dlp
 SET    Sponsorblock-Api=https://sponsor.ajay.app
+:: http://proxy-ip:port; socks5://localhost:port
+SET               Proxy=
+:: default/never/two-letter ISO 3166-2 country code/IP block in CIDR notation
+SET          geo-bypass=default
 :: plugins settings
 SET	  Chapters-Path=%YTdlp-Folder%\chapters.txt
 :: if defined will create folders for each text list entered
@@ -178,7 +182,7 @@ SET	appErr=%ERRORLEVEL%
 SET  OutTemplate= --output "%TargetFolder%\%%(title)s.%%(ext)s"
 SET      Options= --ignore-errors --ignore-config
 SET      Network= --add-headers "User-Agent:%User-Agent%"
-SET  GeoRestrict= --xff "default"
+SET  GeoRestrict= --xff "%geo-bypass%"
 SET       Select= --no-download-archive
 SET     Download= --limit-rate %SpeedLimit% --concurrent-fragments %Threads%
 SET Sponsorblock= --sponsorblock-mark sponsor,preview --sponsorblock-remove sponsor,preview --sponsorblock-api "%Sponsorblock-Api%"
@@ -236,7 +240,7 @@ IF DEFINED MakeListDir MD "%TargetFolder%\%~n1" >NUL 2>&1
 IF DEFINED MakeListDir PUSHD "%TargetFolder%\%~n1"
 :: clean a .URL file from innapropriate lines 
 :: drag link from browser to disk to download .URL
-%Sed-Path% -i -e '/InternetShortcut/d';'s/URL=//g';'s/^&.*//' %1 & %truncate-path% -s -1 %1 >NUL 2>&1
+"%Sed-Path%" -i -e '/InternetShortcut/d';'s/URL=//g';'s/^&.*//' %1 & "%truncate-path%" -s -1 %1 >NUL 2>&1
 FOR /F "usebackq tokens=*" %%A IN ("%~1") DO CALL :doYTDL-drag "%%~A"
 :: return to target folder, left-shift parameters, and loop
 IF DEFINED MakeListDir POPD
@@ -247,10 +251,10 @@ GOTO :getLST-drag
 :: man, this is just dirty...
 :: get clipboard content
 :: try deleting double quotes because script will crash before it even starts
-%mshta% > %TargetFolder%\clipboard.tmp
-%Sed-Path% -i -e "s/\"//g";"s/\"$//g" %TargetFolder%\clipboard.tmp
-SET /p "clipboard=" < %TargetFolder%\clipboard.tmp
-del /q %TargetFolder%\clipboard.tmp 2> nul
+%mshta% > "%TargetFolder%\clipboard.tmp"
+"%Sed-Path%" -i -e "s/\"//g";"s/\"$//g" "%TargetFolder%\clipboard.tmp"
+SET /p "clipboard=" < "%TargetFolder%\clipboard.tmp"
+del /q "%TargetFolder%\clipboard.tmp" 2> nul
 :: check if clipboard content is a link
 :: quote it because echo doesn't like & and other symbols 
 ECHO "%clipboard%" | findstr /R /C:"^.https://.*">NUL 2>&1
@@ -259,7 +263,7 @@ ECHO "%clipboard%" | findstr /R /C:"^.https://.*">NUL 2>&1
 :: delete spaces. delete newline symbol that sed brings every time.
 :: copy link back to clipboard.
 if %errorlevel% equ 0 (
-ECHO "%clipboard%" | %Sed-Path% -e 's/^&.*//';'s/\"//g';'s/\"$//g';'s/[ \t]*$//' | %tr-Path% -d "\n" | clip >NUL 2>&1
+ECHO "%clipboard%" | "%Sed-Path%" -e 's/^&.*//';'s/\"//g';'s/\"$//g';'s/[ \t]*$//' | "%tr-Path%" -d "\n" | clip >NUL 2>&1
 FOR /f "tokens=* delims=" %%c IN ('%mshta%') DO SET clipboard=%%c
 cls
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -290,11 +294,10 @@ ECHO   %Cyan-s%5%ColorOff%. Download Comments Only
 ECHO   %Cyan-s%6%ColorOff%. Stream to Player
 ECHO   %Cyan-s%7%ColorOff%. Section/Chapter Splitter
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Yellow-s%e%ColorOff%. Enter URL		%Yellow-s%t%ColorOff%. Set Duration Filter
-ECHO   %Yellow-s%w%ColorOff%. Set Downloader	%Yellow-s%d%ColorOff%. Set Date Filter
-ECHO   %Yellow-s%c%ColorOff%. Set Cookies	%Yellow-s%v%ColorOff%. Version Info
-ECHO   %Yellow-s%p%ColorOff%. Set Plugins	%Yellow-s%u%ColorOff%. Update
-ECHO   %Red-s%q%ColorOff%. Exit		%Yellow-s%x%ColorOff%. Error Info
+ECHO   %Yellow-s%e%ColorOff%. Enter URL	%Yellow-s%v%ColorOff%. Version Info
+ECHO   %Yellow-s%s%ColorOff%. Settings	%Yellow-s%x%ColorOff%. Error Info
+ECHO   %Yellow-s%u%ColorOff%. Update
+ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p choice=!BS!%spcs%Enter Your Choice: 
 IF "%choice%"=="1" GOTO :select-format-audio
@@ -305,14 +308,10 @@ IF "%choice%"=="5" GOTO :select-preset-comments
 IF "%choice%"=="6" GOTO :select-format-stream
 IF "%choice%"=="7" GOTO :select-preset-sections
 IF "%choice%"=="e" GOTO :getURL-re-enter
+IF "%choice%"=="s" GOTO :settings
+IF "%choice%"=="u" GOTO :update
 IF "%choice%"=="v" GOTO :info
 IF "%choice%"=="x" GOTO :error-info
-IF "%choice%"=="t" GOTO :set-duration-filter
-IF "%choice%"=="d" GOTO :set-date-filter
-IF "%choice%"=="u" GOTO :update
-IF "%choice%"=="c" GOTO :cookies
-IF "%choice%"=="p" GOTO :plugins
-IF "%choice%"=="w" GOTO :aria
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -349,34 +348,75 @@ GOTO :continue
 GOTO :start
 )))))))))
 
-:getURL-continue
+:settings
 cls
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Blue-s%•%ColorOff%  ENTER SOURCE URL
+ECHO   %Blue-s%•%ColorOff%  SETTINGS
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P URL=!BS!%spcs%%Green-n%›%ColorOff%  
-IF NOT DEFINED URL EXIT /B %appErr%
-IF "%Downloaded-Audio%"=="1" (
-GOTO :doYTDL
-) ELSE (IF "%Downloaded-Video%"=="1" (
-GOTO :doYTDL
-) ELSE (IF "%Downloaded-Manual%"=="1" (
-GOTO :download-manual
-) ELSE (IF "%Downloaded-Manual-Single%"=="1" (
-GOTO :download-manual-single
-) ELSE (IF "%Downloaded-Comments%"=="1" (
-GOTO :doYTDL
-) ELSE (IF "%Downloaded-Subs%"=="1" (
-GOTO :doYTDL
-) ELSE (IF "%Downloaded-Stream%"=="1" (
-GOTO :doYTDL-stream
-) ELSE (IF "%Downloaded-Sections%"=="1" (
-GOTO :select-preset-sections
-) ELSE (IF "%Downloaded-Quick%"=="1" (
-GOTO :doYTDL-quick
-) ELSE (
-GOTO :start
-)))))))))
+ECHO   %Cyan-s%1%ColorOff%. Set Cookies
+ECHO   %Cyan-s%2%ColorOff%. Set Downloader
+ECHO   %Cyan-s%3%ColorOff%. Set Plugins
+ECHO   %Cyan-s%4%ColorOff%. Set Geo-Bypass
+ECHO   %Cyan-s%5%ColorOff%. Set Proxy
+ECHO   %Cyan-s%6%ColorOff%. Set Duration Filter
+ECHO   %Cyan-s%7%ColorOff%. Set Date Filter
+ECHO   %Cyan-s%8%ColorOff%. Set Playlist Skipping After Errors
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Yellow-s%w%ColorOff%. Go Back
+ECHO   %Red-s%q%ColorOff%. Exit
+ECHO.
+SET /p choice=!BS!%spcs%Enter Your Choice: 
+IF "%choice%"=="1" GOTO :cookies
+IF "%choice%"=="2" GOTO :aria
+IF "%choice%"=="3" GOTO :plugins
+IF "%choice%"=="4" GOTO :geo-bypass
+IF "%choice%"=="5" GOTO :proxy
+IF "%choice%"=="6" GOTO :set-duration-filter
+IF "%choice%"=="7" GOTO :set-date-filter
+IF "%choice%"=="8" GOTO :playlist-error
+IF "%choice%"=="w" GOTO :start
+IF "%choice%"=="q" GOTO :exit
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
+ECHO ------------------------------------------------------------------------------------------------------------------------
+timeout /t 2 >nul
+GOTO :settings
+
+:playlist-error
+cls
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Blue-s%•%ColorOff%  Stop Playlist Download on Errors
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Cyan-s%1%ColorOff%. After 1 Error
+ECHO   %Cyan-s%2%ColorOff%. After 2 Errors
+ECHO   %Cyan-s%3%ColorOff%. After 3 Errors
+ECHO   %Cyan-s%4%ColorOff%. After 4 Errors
+ECHO   %Cyan-s%5%ColorOff%. After 5 Errors
+ECHO   %Cyan-s%6%ColorOff%. After 6 Errors
+ECHO   %Cyan-s%7%ColorOff%. After 7 Errors
+ECHO   %Cyan-s%8%ColorOff%. After 8 Errors
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Yellow-n%r%ColorOff%. Do Not Stop on Errors (default)
+ECHO   %Yellow-s%w%ColorOff%. Go Back
+ECHO   %Red-s%q%ColorOff%. Exit
+ECHO.
+SET /p choice=!BS!%spcs%Number of allowed failures until the rest of the playlist is skipped: 
+IF "%choice%"=="1" SET stop_on_error=1& GOTO :settings
+IF "%choice%"=="2" SET stop_on_error=2& GOTO :settings
+IF "%choice%"=="3" SET stop_on_error=3& GOTO :settings
+IF "%choice%"=="4" SET stop_on_error=4& GOTO :settings
+IF "%choice%"=="5" SET stop_on_error=5& GOTO :settings
+IF "%choice%"=="6" SET stop_on_error=6& GOTO :settings
+IF "%choice%"=="7" SET stop_on_error=7& GOTO :settings
+IF "%choice%"=="8" SET stop_on_error=8& GOTO :settings
+IF "%choice%"=="r" SET stop_on_error=& GOTO :settings
+IF "%choice%"=="w" GOTO :settings
+IF "%choice%"=="q" GOTO :exit
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
+ECHO ------------------------------------------------------------------------------------------------------------------------
+timeout /t 2 >nul
+GOTO :playlist-error
 
 :aria
 cls
@@ -389,8 +429,8 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p usearia=!BS!%spcs%Use aria2c as External Downloader? 
-IF "%usearia%"=="1" GOTO :start
-IF "!usearia!"=="2" SET !usearia!=& GOTO :start
+IF "%usearia%"=="1" GOTO :settings
+IF "!usearia!"=="2" SET !usearia!=& GOTO :settings
 IF "%usearia%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -409,8 +449,8 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p usecookies=!BS!%spcs%Use cookies.txt? 
-IF "%usecookies%"=="1" GOTO :start
-IF "!usecookies!"=="2" SET !usecookies!=& GOTO :start
+IF "%usecookies%"=="1" GOTO :settings
+IF "!usecookies!"=="2" SET !usecookies!=& GOTO :settings
 IF "%usecookies%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -436,7 +476,7 @@ IF "%choice%"=="1" GOTO :plugin-1
 IF "%choice%"=="2" GOTO :plugin-2
 IF "%choice%"=="3" GOTO :plugin-3
 IF "%choice%"=="4" GOTO :plugin-4
-IF "%choice%"=="w" GOTO :start
+IF "%choice%"=="w" GOTO :settings
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -530,7 +570,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Blue-s%•%ColorOff%  VERSION INFO
 ECHO ------------------------------------------------------------------------------------------------------------------------
 "%YTdlp-Path%" -v
-IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Bold%%appErr%%ColorOff%.
+IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Cyan-s%%appErr%%ColorOff%.
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  OK
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -564,7 +604,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  UPDATING...
 ECHO ------------------------------------------------------------------------------------------------------------------------
 "%YTdlp-Path%" -U
-IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Bold%%appErr%%ColorOff%.
+IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Cyan-s%%appErr%%ColorOff%.
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  Continue
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -612,7 +652,7 @@ GOTO :doYTDL-quick
 ) ELSE (
 ECHO   %Red-s%•%ColorOff%  Nothing to Retry. & GOTO :continue
 ))))))))))
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET DefaultAuto=& SET ALBUM=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET BestAudio=& SET ALBUM=& GOTO :start
 IF "%choice%"=="e" GOTO :getURL-re-enter
 REM IF "%choice%"=="w" GOTO :aria
 IF "%choice%"=="q" GOTO :exit
@@ -621,6 +661,35 @@ ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 2 >nul
 GOTO :continue
+
+:getURL-continue
+cls
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Blue-s%•%ColorOff%  ENTER SOURCE URL
+ECHO ------------------------------------------------------------------------------------------------------------------------
+SET /P URL=!BS!%spcs%%Green-n%›%ColorOff%  
+IF NOT DEFINED URL EXIT /B %appErr%
+IF "%Downloaded-Audio%"=="1" (
+GOTO :doYTDL
+) ELSE (IF "%Downloaded-Video%"=="1" (
+GOTO :doYTDL
+) ELSE (IF "%Downloaded-Manual%"=="1" (
+GOTO :download-manual
+) ELSE (IF "%Downloaded-Manual-Single%"=="1" (
+GOTO :download-manual-single
+) ELSE (IF "%Downloaded-Comments%"=="1" (
+GOTO :doYTDL
+) ELSE (IF "%Downloaded-Subs%"=="1" (
+GOTO :doYTDL
+) ELSE (IF "%Downloaded-Stream%"=="1" (
+GOTO :doYTDL-stream
+) ELSE (IF "%Downloaded-Sections%"=="1" (
+GOTO :select-preset-sections
+) ELSE (IF "%Downloaded-Quick%"=="1" (
+GOTO :doYTDL-quick
+) ELSE (
+GOTO :start
+)))))))))
 
 :exit
 cls
@@ -676,7 +745,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  DOWNLOADING...
 ECHO ------------------------------------------------------------------------------------------------------------------------
 "%YTdlp-Path%" --concurrent-fragments %Threads% --ffmpeg-location "%FFmpeg-Path%" --output "%TargetFolder%\%%(title)s.%%(ext)s" -f "%video%+%audio%" -i --ignore-config%Download% "%URL%"
-IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Bold%%appErr%%ColorOff%.
+IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Cyan-s%%appErr%%ColorOff%.
 IF "%appErr%"=="1" ECHO   %Red-s%•%ColorOff%  Try re-entering correct format. & GOTO :selection-manual
 SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=1& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET Downloaded-Stream=& SET Downloaded-Sections=& SET Downloaded-Quick=
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -694,7 +763,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  DOWNLOADING...
 ECHO ------------------------------------------------------------------------------------------------------------------------
 "%YTdlp-Path%" --concurrent-fragments %Threads% --ffmpeg-location "%FFmpeg-Path%" --output "%TargetFolder%\%%(title)s.%%(ext)s" -f "%format%" -i --ignore-config%Download% "%URL%"
-IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Bold%%appErr%%ColorOff%.
+IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Cyan-s%%appErr%%ColorOff%.
 IF "%appErr%"=="1" ECHO   %Red-s%•%ColorOff%  Try re-entering correct format. & GOTO :selection-manual-single
 SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=1& SET Downloaded-Comments=& SET Downloaded-Subs=& SET Downloaded-Stream=& SET Downloaded-Sections=& SET Downloaded-Quick=
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -710,45 +779,45 @@ GOTO :continue
 ::
 
 :select-format-audio
-SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET CustomFormat-opus=& SET CustomFormat-ogg=& SET CustomFormatAudio=& SET DefaultAuto=
+SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET CustomFormat-opus=& SET CustomFormat-ogg=& SET CustomFormatAudio=& SET BestAudio=
 SET Downloaded-Audio=
 cls
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Blue-s%•%ColorOff%  AUDIO FORMAT
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%1%ColorOff%. Convert → m4a	%Cyan-s%11%ColorOff%. Convert → m4a ^(libfdk/VBR^)	%Cyan-s%14%ColorOff%. Convert → m4a ^(libfdk/VBR/filter^) 
-ECHO   %Cyan-s%2%ColorOff%. Convert → mp3
-ECHO   %Cyan-s%3%ColorOff%. Convert → opus
-ECHO   %Cyan-s%4%ColorOff%. Convert → aac
-ECHO   %Cyan-s%5%ColorOff%. Convert → ogg
+ECHO   %Cyan-s%1%ColorOff%. Extract Best
+ECHO   %Cyan-s%2%ColorOff%. Extract opus	%Cyan-s%11%ColorOff%. Extract opus ^(up to 4.0^) 	%Cyan-s%14%ColorOff%. Extract opus ^(up to 4.0^) + ^(downmix to 2.0/148k/filter^)
+ECHO   %Cyan-s%3%ColorOff%. Extract mp4a	%Cyan-s%12%ColorOff%. Extract mp4a ^(up to 5.1^)	%Cyan-s%15%ColorOff%. Extract mp4a ^(up to 5.1^) + ^(downmix to 2.0/VBR/filter^)
+ECHO   %Cyan-s%4%ColorOff%. Extract vorbis
+ECHO   %Cyan-s%5%ColorOff%. Extract mp3
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%6%ColorOff%. Extract Best
+ECHO   %Cyan-s%6%ColorOff%. Convert → m4a	%Cyan-s%13%ColorOff%. Convert → m4a ^(libfdk/VBR^)	%Cyan-s%16%ColorOff%. Convert → m4a ^(libfdk/VBR/filter^) 
+ECHO   %Cyan-s%7%ColorOff%. Convert → mp3
+ECHO   %Cyan-s%8%ColorOff%. Convert → opus
+ECHO   %Cyan-s%9%ColorOff%. Convert → aac
+ECHO  %Cyan-s%10%ColorOff%. Convert → ogg
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%7%ColorOff%. Extract opus	%Cyan-s%12%ColorOff%. Extract opus ^(up to 4.0^) 	%Cyan-s%15%ColorOff%. Extract opus ^(up to 4.0^) + ^(downmix to 2.0/148k/filter^)
-ECHO   %Cyan-s%8%ColorOff%. Extract mp4a	%Cyan-s%13%ColorOff%. Extract mp4a ^(up to 5.1^)	%Cyan-s%16%ColorOff%. Extract mp4a ^(up to 5.1^) + ^(downmix to 2.0/VBR/filter^)
-ECHO   %Cyan-s%9%ColorOff%. Extract vorbis
-ECHO   %Cyan-s%10%ColorOff%. Extract mp3
-ECHO ------------------------------------------------------------------------------------------------------------------------
+
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p choice=!BS!%spcs%Select Audio Format: 
-IF "%choice%"=="1" SET AudioFormat=m4a& GOTO :select-quality-audio
-IF "%choice%"=="2" SET AudioFormat=mp3& GOTO :select-quality-audio
-IF "%choice%"=="3" SET AudioFormat=opus& GOTO :select-quality-audio
-IF "%choice%"=="4" SET AudioFormat=aac& GOTO :select-quality-audio
-IF "%choice%"=="5" SET AudioFormat=vorbis& GOTO :select-quality-audio
-IF "%choice%"=="6" SET CustomFormatAudio=1& SET DefaultAuto=1& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
-IF "%choice%"=="7" SET CustomFormatAudio=1& SET CustomFormat-opus=1& SET AudioFormat=opus& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
-IF "%choice%"=="8" SET CustomFormatAudio=1& SET CustomFormat-m4a=1& SET AudioFormat=m4a& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
-IF "%choice%"=="9" SET CustomFormatAudio=1& SET CustomFormat-ogg=1& SET AudioFormat=vorbis& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
-IF "%choice%"=="10" SET CustomFormatAudio=1& SET CustomFormat-mp3=1& SET AudioFormat=mp3& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
-IF "%choice%"=="11" SET CustomFormat-m4a=2& SET AudioFormat=m4a& GOTO :select-quality-vbr-audio
-IF "%choice%"=="12" SET CustomFormatAudio=1& SET CustomFormat-opus=2& SET AudioFormat=opus& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
-IF "%choice%"=="13" SET CustomFormatAudio=1& SET CustomFormat-m4a=3& SET AudioFormat=m4a& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
-IF "%choice%"=="14" SET CustomFormat-m4a=4& SET AudioFormat=m4a& GOTO :select-quality-vbr-audio
-IF "%choice%"=="15" SET CustomFormatAudio=1& SET CustomFormat-opus=3& SET AudioFormat=opus& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
-IF "%choice%"=="16" SET CustomFormat-m4a=5& SET AudioFormat=m4a& GOTO :select-quality-vbr-audio
+IF "%choice%"=="1" SET CustomFormatAudio=1& SET BestAudio=1& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="2" SET CustomFormatAudio=1& SET CustomFormat-opus=1& SET AudioFormat=opus& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="3" SET CustomFormatAudio=1& SET CustomFormat-m4a=1& SET AudioFormat=m4a& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="4" SET CustomFormatAudio=1& SET CustomFormat-ogg=1& SET AudioFormat=vorbis& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="5" SET CustomFormatAudio=1& SET CustomFormat-mp3=1& SET AudioFormat=mp3& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="6" SET AudioFormat=m4a& GOTO :select-quality-audio
+IF "%choice%"=="7" SET AudioFormat=mp3& GOTO :select-quality-audio
+IF "%choice%"=="8" SET AudioFormat=opus& GOTO :select-quality-audio
+IF "%choice%"=="9" SET AudioFormat=aac& GOTO :select-quality-audio
+IF "%choice%"=="10" SET AudioFormat=vorbis& GOTO :select-quality-audio
+IF "%choice%"=="11" SET CustomFormatAudio=1& SET CustomFormat-opus=2& SET AudioFormat=opus& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="12" SET CustomFormatAudio=1& SET CustomFormat-m4a=3& SET AudioFormat=m4a& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="13" SET CustomFormat-m4a=2& SET AudioFormat=m4a& GOTO :select-quality-vbr-audio
+IF "%choice%"=="14" SET CustomFormatAudio=1& SET CustomFormat-opus=3& SET AudioFormat=opus& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
+IF "%choice%"=="15" SET CustomFormat-m4a=5& SET AudioFormat=m4a& GOTO :select-quality-vbr-audio
+IF "%choice%"=="16" SET CustomFormat-m4a=4& SET AudioFormat=m4a& GOTO :select-quality-vbr-audio
 IF "%choice%"=="w" IF "%SectionsAudio%"=="1" (GOTO :select-preset-sections) ELSE (IF "%SectionsAudio%"=="2" (GOTO :select-preset-sections) ELSE (GOTO :start))
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -835,7 +904,7 @@ IF "%choice%"=="9" SET quality_simple=1& SET AudioQuality=9& IF "%SectionsAudio%
 IF "%choice%"=="10" SET quality_simple=1& SET AudioQuality=10& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
 IF "%choice%"=="11" IF "%AudioFormat%"=="mp3" (SET quality_simple=1& SET AudioQuality=320k& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))) ELSE (SET quality_simple=1& SET AudioQuality=0& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio)))
 IF "%choice%"=="w" GOTO :select-format-audio
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET DefaultAuto=& SET ALBUM=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET BestAudio=& SET ALBUM=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -869,7 +938,7 @@ IF "%choice%"=="4" SET quality_libfdk=1& SET AudioQuality=4& IF "%SectionsAudio%
 IF "%choice%"=="5" SET quality_libfdk=1& SET AudioQuality=5& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
 IF "%choice%"=="6" SET quality_libfdk=1& SET AudioQuality=0& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (GOTO :select-preset-audio))
 IF "%choice%"=="w" GOTO :select-format-audio
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET DefaultAuto=& SET ALBUM=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET BestAudio=& SET ALBUM=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -935,7 +1004,7 @@ IF "%choice%"=="24" SET CropThumb=1& SET OnlyNew=1& IF "%use_pl_replaygain%"=="1
 IF "%choice%"=="25" SET VariousArtists=1& SET OnlyNew=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=3& GOTO :doYTDL-audio-preset-3) ELSE (GOTO :doYTDL-audio-preset-3)
 IF "%choice%"=="26" SET VariousArtists=1& SET CropThumb=1& SET OnlyNew=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=3& GOTO :doYTDL-audio-preset-3) ELSE (GOTO :doYTDL-audio-preset-3)
 IF "%choice%"=="w" IF "%CustomFormatAudio%"=="1" (GOTO :select-format-audio) ELSE (IF "%quality_libfdk%"=="1" (GOTO :select-quality-vbr-audio) ELSE (GOTO :select-quality-audio))
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET DefaultAuto=& SET ALBUM=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET BestAudio=& SET ALBUM=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -1037,7 +1106,7 @@ IF "%choice%"=="13" SET OnlyNew=1& SET CropThumb=1& GOTO :doYTDL-video-preset-3
 IF "%choice%"=="14" SET CommentPreset=1& SET OnlyNew=1& GOTO :doYTDL-video-preset-3
 IF "%choice%"=="15" SET CommentPreset=1& SET OnlyNew=1& SET CropThumb=1& GOTO :doYTDL-video-preset-3
 IF "%choice%"=="w" GOTO :select-format-video
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET DefaultAuto=& SET ALBUM=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET BestAudio=& SET ALBUM=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -1175,7 +1244,7 @@ SET /p choice=!BS!%spcs%Enter Your Choice:
 IF "%choice%"=="1" SET StreamVideoFormat=& SET StreamAudioFormat=1& GOTO :doYTDL-preset-stream-1
 IF "%choice%"=="2" SET StreamVideoFormat=& SET StreamAudioFormat=2& GOTO :doYTDL-preset-stream-1
 IF "%choice%"=="w" GOTO :select-format-stream
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET DefaultAuto=& SET ALBUM=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET BestAudio=& SET ALBUM=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -1203,7 +1272,7 @@ IF "%choice%"=="2" SET StreamAudioFormat=& SET StreamVideoFormat=2& GOTO :doYTDL
 IF "%choice%"=="3" SET StreamAudioFormat=& SET StreamVideoFormat=3& GOTO :doYTDL-preset-stream-1
 IF "%choice%"=="4" SET StreamAudioFormat=& SET StreamVideoFormat=4& GOTO :doYTDL-preset-stream-1
 IF "%choice%"=="w" GOTO :select-format-stream
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET DefaultAuto=& SET ALBUM=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET BestAudio=& SET ALBUM=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -1292,7 +1361,7 @@ IF "%choice%"=="8" SET DoSections=8& GOTO :enter-sections-8
 IF "%choice%"=="9" SET DoSections=9& GOTO :enter-sections-9
 IF "%choice%"=="10" SET DoSections=10& GOTO :enter-sections-10
 IF "%choice%"=="w" IF "%SectionsVideo%"=="1" (GOTO :select-format-video) ELSE (IF "%CustomFormatAudio%"=="1" (GOTO :select-format-audio) ELSE (IF "%quality_libfdk%"=="1" (GOTO :select-quality-vbr-audio) ELSE (IF "%quality_simple%"=="1" (GOTO :select-quality-audio) ELSE (GOTO :select-preset-sections))))
-IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET DefaultAuto=& SET ALBUM=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET BestAudio=& SET ALBUM=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -1446,8 +1515,8 @@ ECHO ---------------------------------------------------------------------------
 ECHO  %Cyan-s%14%ColorOff%. Video IS live
 ECHO  %Cyan-s%15%ColorOff%. Video is NOT live
 ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Yellow-n%r%ColorOff%. Disable Duration Filter
 ECHO   %Yellow-s%w%ColorOff%. Go Back
-ECHO   %Yellow-n%t%ColorOff%. Disable Duration Filter
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p choice=!BS!%spcs%Select Duration Filter Preset: 
@@ -1459,15 +1528,15 @@ IF "%choice%"=="5" SET duration_filter=5& GOTO :duration-filter-1
 IF "%choice%"=="6" SET duration_filter=6& GOTO :duration-filter-2
 IF "%choice%"=="7" SET duration_filter=7& GOTO :duration-filter-3
 IF "%choice%"=="8" SET duration_filter=8& GOTO :duration-filter-4
-IF "%choice%"=="9" SET duration_filter=9& GOTO :start
-IF "%choice%"=="10" SET duration_filter=10& GOTO :start
-IF "%choice%"=="11" SET duration_filter=11& GOTO :start
-IF "%choice%"=="12" SET duration_filter=12& GOTO :start
-IF "%choice%"=="13" SET duration_filter=13& GOTO :start
-IF "%choice%"=="14" SET duration_filter=14& GOTO :start
-IF "%choice%"=="15" SET duration_filter=15& GOTO :start
-IF "%choice%"=="t" SET duration_filter=& GOTO :start
-IF "%choice%"=="w" GOTO :start
+IF "%choice%"=="9" SET duration_filter=9& GOTO :settings
+IF "%choice%"=="10" SET duration_filter=10& GOTO :settings
+IF "%choice%"=="11" SET duration_filter=11& GOTO :settings
+IF "%choice%"=="12" SET duration_filter=12& GOTO :settings
+IF "%choice%"=="13" SET duration_filter=13& GOTO :settings
+IF "%choice%"=="14" SET duration_filter=14& GOTO :settings
+IF "%choice%"=="15" SET duration_filter=15& GOTO :settings
+IF "%choice%"=="r" SET duration_filter=& GOTO :settings
+IF "%choice%"=="w" GOTO :settings
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -1484,7 +1553,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 1 >nul
-GOTO :start
+GOTO :settings
 
 :duration-filter-2
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -1496,7 +1565,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 1 >nul
-GOTO :start
+GOTO :settings
 
 :duration-filter-3
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -1509,7 +1578,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 1 >nul
-GOTO :start
+GOTO :settings
 
 :duration-filter-4
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -1523,7 +1592,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 1 >nul
-GOTO :start
+GOTO :settings
 
 ::
 ::
@@ -1551,8 +1620,8 @@ ECHO  %Cyan-s%10%ColorOff%. Only Uploaded ON or AFTER the Specified Date + Set 2
 ECHO  %Cyan-s%11%ColorOff%. Only Uploaded BETWEEN the Specified Dates + Set 2 Duration Filters
 ECHO  %Cyan-s%12%ColorOff%. Only Uploaded ON CURRENT date OR Relative to it + Set 2 Duration Filters
 ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Yellow-n%r%ColorOff%. Disable Date Filter
 ECHO   %Yellow-s%w%ColorOff%. Go Back
-ECHO   %Yellow-n%d%ColorOff%. Disable Date Filter
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
 SET /p choice=!BS!%spcs%Select Date Filter Preset: 
@@ -1568,8 +1637,8 @@ IF "%choice%"=="9" SET date-filter=9& GOTO :date-filter-5
 IF "%choice%"=="10" SET date-filter=10& GOTO :date-filter-5
 IF "%choice%"=="11" SET date-filter=11& GOTO :date-filter-6
 IF "%choice%"=="12" SET date-filter=12& GOTO :date-filter-5
-IF "%choice%"=="d" SET date-filter=& GOTO :start
-IF "%choice%"=="w" GOTO :start
+IF "%choice%"=="r" SET date-filter=& GOTO :settings
+IF "%choice%"=="w" GOTO :settings
 IF "%choice%"=="q" GOTO :exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
@@ -1586,7 +1655,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 1 >nul
-GOTO :start
+GOTO :settings
 :date-filter-2
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  Date in YYYYMMDD format OR relative period ^(now^|today^|yesterday^)[+-][0-9]^(day^|week^|month^|year^), i.e. today-6month
@@ -1597,7 +1666,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 1 >nul
-GOTO :start
+GOTO :settings
 :date-filter-3
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  Date in YYYYMMDD format OR relative period ^(now^|today^|yesterday^)[+-][0-9]^(day^|week^|month^|year^), i.e. today-6month
@@ -1611,7 +1680,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 1 >nul
-GOTO :start
+GOTO :settings
 :date-filter-4
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  Date in YYYYMMDD format OR relative period ^(now^|today^|yesterday^)[+-][0-9]^(day^|week^|month^|year^), i.e. today-6month
@@ -1626,7 +1695,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 1 >nul
-GOTO :start
+GOTO :settings
 :date-filter-5
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  Date in YYYYMMDD format OR relative period ^(now^|today^|yesterday^)[+-][0-9]^(day^|week^|month^|year^), i.e. today-6month
@@ -1641,7 +1710,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 1 >nul
-GOTO :start
+GOTO :settings
 :date-filter-6
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  Date in YYYYMMDD format OR relative period ^(now^|today^|yesterday^)[+-][0-9]^(day^|week^|month^|year^), i.e. today-6month
@@ -1657,7 +1726,152 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 1 >nul
-GOTO :start
+GOTO :settings
+
+::
+::
+:: PROXY MENU
+::
+::
+
+:proxy
+cls
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Blue-s%•%ColorOff%  PROXY SETTINGS
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Cyan-s%1%ColorOff%. Set HTTP Proxy
+ECHO   %Cyan-s%2%ColorOff%. Set HTTP Proxy + Authentication
+ECHO   %Cyan-s%3%ColorOff%. Set SOCKS Proxy
+ECHO   %Cyan-s%4%ColorOff%. Set SOCKS Proxy + Authentication
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Yellow-n%r%ColorOff%. Disable Proxies
+ECHO   %Yellow-s%w%ColorOff%. Go Back
+ECHO   %Red-s%q%ColorOff%. Exit
+ECHO.
+SET /p choice=!BS!%spcs%Enter Your Choice: 
+IF "%choice%"=="1" SET proxy=1& SET proxy-option=1& GOTO :proxy-1
+IF "%choice%"=="2" SET proxy=1& SET proxy-option=2& GOTO :proxy-2
+IF "%choice%"=="3" SET proxy=1& SET proxy-option=3& GOTO :proxy-1
+IF "%choice%"=="4" SET proxy=1& SET proxy-option=4& GOTO :proxy-2
+IF "%choice%"=="r" SET proxy=& SET proxy-option=& SET proxy_adress=& SET proxy_username=& SET proxy_password=& GOTO :settings
+IF "%choice%"=="w" GOTO :settings
+IF "%choice%"=="q" GOTO :exit
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
+ECHO ------------------------------------------------------------------------------------------------------------------------
+timeout /t 2 >nul
+GOTO :proxy
+
+:proxy-1
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Yellow-s%•%ColorOff%  i.e. proxy-ip:port, localhost:9150
+ECHO ------------------------------------------------------------------------------------------------------------------------
+SET /P proxy_adress=!BS!%spcs%Enter Proxy IP:PORT: 
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Green-s%•%ColorOff%  Done
+ECHO ------------------------------------------------------------------------------------------------------------------------
+timeout /t 1 >nul
+GOTO :settings
+
+:proxy-2
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Yellow-s%•%ColorOff%  i.e. proxy-ip:port, localhost:9150 and include your credentials
+ECHO ------------------------------------------------------------------------------------------------------------------------
+SET /P proxy_adress=!BS!%spcs%Enter Proxy IP:PORT: 
+SET /P proxy_username=!BS!%spcs%Enter Your Username: 
+SET /P proxy_password=!BS!%spcs%Enter Your Password: 
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Green-s%•%ColorOff%  Done
+ECHO ------------------------------------------------------------------------------------------------------------------------
+timeout /t 1 >nul
+GOTO :settings
+
+::
+::
+:: GEO BYPASS MENU
+::
+::
+
+:geo-bypass
+cls
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Blue-s%•%ColorOff%  GEO-BYPASS METHODS
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Cyan-s%1%ColorOff%. Use Default Method to Fake HTTP Header
+ECHO   %Cyan-s%2%ColorOff%. Use Two-letter ISO Country Code
+ECHO   %Cyan-s%3%ColorOff%. Use IP Block in CIDR Notation
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Cyan-s%4%ColorOff%. Use HTTP Proxy
+ECHO   %Cyan-s%5%ColorOff%. Use HTTP Proxy + Authentication
+ECHO   %Cyan-s%6%ColorOff%. Use SOCKS Proxy
+ECHO   %Cyan-s%7%ColorOff%. Use SOCKS Proxy + Authentication
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Yellow-n%r%ColorOff%. Never Use Bypass
+ECHO   %Yellow-s%w%ColorOff%. Go Back
+ECHO   %Red-s%q%ColorOff%. Exit
+ECHO.
+SET /p choice=!BS!%spcs%Enter Your Choice: 
+IF "%choice%"=="1" SET geo-bypass=default& SET geo-option=1& GOTO :settings
+IF "%choice%"=="2" SET geo-bypass=1& SET geo-option=2& GOTO :geo-bypass-code
+IF "%choice%"=="3" SET geo-bypass=1& SET geo-option=3& GOTO :geo-bypass-cidr
+IF "%choice%"=="4" SET geo-bypass=1& SET geo-option=4& GOTO :geo-proxy-1
+IF "%choice%"=="5" SET geo-bypass=1& SET geo-option=5& GOTO :geo-proxy-2
+IF "%choice%"=="6" SET geo-bypass=1& SET geo-option=6& GOTO :geo-proxy-1
+IF "%choice%"=="7" SET geo-bypass=1& SET geo-option=7& GOTO :geo-proxy-2
+IF "%choice%"=="r" SET geo-bypass=never& SET geo-option=1& SET geo_proxy_adress=& SET geo_iso_code=& SET geo_cidr=& SET geo_proxy_username=& SET geo_proxy_password=& GOTO :settings
+IF "%choice%"=="w" GOTO :settings
+IF "%choice%"=="q" GOTO :exit
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
+ECHO ------------------------------------------------------------------------------------------------------------------------
+timeout /t 2 >nul
+GOTO :geo-bypass
+
+:geo-bypass-code
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Yellow-s%•%ColorOff%  Specific two-letter ISO 3166-2 country code, i.e. NL for Netherlands
+ECHO ------------------------------------------------------------------------------------------------------------------------
+SET /P geo_iso_code=!BS!%spcs%Enter ISO Code: 
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Green-s%•%ColorOff%  Done
+ECHO ------------------------------------------------------------------------------------------------------------------------
+timeout /t 1 >nul
+GOTO :settings
+
+:geo-bypass-cidr
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Yellow-s%•%ColorOff%  An IP block in CIDR notation, i.e. 5.104.136.0/21
+ECHO ------------------------------------------------------------------------------------------------------------------------
+SET /P geo_cidr=!BS!%spcs%Enter CIDR IP Notation: 
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Green-s%•%ColorOff%  Done
+ECHO ------------------------------------------------------------------------------------------------------------------------
+timeout /t 1 >nul
+GOTO :settings
+
+:geo-proxy-1
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Yellow-s%•%ColorOff%  i.e. proxy-ip:port, localhost:9150
+ECHO ------------------------------------------------------------------------------------------------------------------------
+SET /P geo_proxy_adress=!BS!%spcs%Enter Proxy IP:PORT: 
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Green-s%•%ColorOff%  Done
+ECHO ------------------------------------------------------------------------------------------------------------------------
+timeout /t 1 >nul
+GOTO :settings
+
+:geo-proxy-2
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Yellow-s%•%ColorOff%  i.e. proxy-ip:port, localhost:9150 and include your credentials
+ECHO ------------------------------------------------------------------------------------------------------------------------
+SET /P geo_proxy_adress=!BS!%spcs%Enter Proxy IP:PORT: 
+SET /P geo_proxy_username=!BS!%spcs%Enter Your Username: 
+SET /P geo_proxy_password=!BS!%spcs%Enter Your Password: 
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Green-s%•%ColorOff%  Done
+ECHO ------------------------------------------------------------------------------------------------------------------------
+timeout /t 1 >nul
+GOTO :settings
 
 ::
 ::
@@ -1669,8 +1883,38 @@ GOTO :start
 :doYTDL-audio-preset-1
 SET  OutTemplate= --path "%TargetFolder%" --output "thumbnail:%TargetFolder%\%%(title)s\cover.%%(ext)s" --output "chapter:%TargetFolder%\%%(title)s\%%(section_title)s.%%(ext)s"
 SET      Options= --ignore-errors --ignore-config
+IF NOT DEFINED proxy (
 SET      Network= --add-headers "User-Agent:%User-Agent%"
-SET  GeoRestrict= --xff "default"
+) ELSE (IF "%proxy-option%"=="1" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="2" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="3" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="4" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "%Proxy%"
+)))))
+IF NOT DEFINED geo-bypass (
+SET  GeoRestrict=
+) ELSE (IF "%geo-option%"=="1" (
+SET  GeoRestrict= --xff "%geo-bypass%"
+) ELSE (IF "%geo-option%"=="2" (
+SET  GeoRestrict= --xff "%geo_iso_code%"
+) ELSE (IF "%geo-option%"=="3" (
+SET  GeoRestrict= --xff "%geo_cidr%"
+) ELSE (IF "%geo-option%"=="4" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="5" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="6" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="7" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (
+SET  GeoRestrict= --xff "%geo-bypass%"
+))))))))
 IF "%CustomChapters%"=="1" (
 SET       Select= --no-download-archive --no-playlist --split-chapters --extractor-args "youtube:chapters_file=%Chapters-Path%"
 ) ELSE (
@@ -1715,8 +1959,8 @@ SET       Format= --extract-audio --format "ba/b" --audio-format %AudioFormat% -
 SET       Format= --extract-audio --format "338/774/251/250/249" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -b:a 148k -c:a libopus -af \"pan=stereo^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-30dB:stop_threshold=-30dB:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="5" (
 SET       Format= --extract-audio --format "258/380/327/256/141/38/22/140/37/59/34/35/59/78/18" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -c:a libfdk_aac -vbr %AudioQuality% -afterburner 1 -af \"pan=stereo^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-30dB:stop_threshold=-30dB:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
-) ELSE (IF "%DefaultAuto%"=="1" (
-SET       Format= --extract-audio --format "ba/b"
+) ELSE (IF "%BestAudio%"=="1" (
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43"
 ) ELSE (
 SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
 )))))))))))
@@ -1753,8 +1997,38 @@ SET  OutTemplate= --output "%TargetFolder%\%%(uploader)s\%%(artist,artists.0,cre
 SET  OutTemplate= --output "%TargetFolder%\%%(uploader)s\%%(title)s.%%(ext)s"
 )
 SET      Options= --ignore-errors --ignore-config
+IF NOT DEFINED proxy (
 SET      Network= --add-headers "User-Agent:%User-Agent%"
-SET  GeoRestrict= --xff "default"
+) ELSE (IF "%proxy-option%"=="1" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="2" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="3" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="4" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "%Proxy%"
+)))))
+IF NOT DEFINED geo-bypass (
+SET  GeoRestrict=
+) ELSE (IF "%geo-option%"=="1" (
+SET  GeoRestrict= --xff "%geo-bypass%"
+) ELSE (IF "%geo-option%"=="2" (
+SET  GeoRestrict= --xff "%geo_iso_code%"
+) ELSE (IF "%geo-option%"=="3" (
+SET  GeoRestrict= --xff "%geo_cidr%"
+) ELSE (IF "%geo-option%"=="4" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="5" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="6" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="7" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (
+SET  GeoRestrict= --xff "%geo-bypass%"
+))))))))
 IF "%OnlyNew%"=="1" (
 SET       Select= --download-archive "%Archive-Path%" --no-overwrites --no-playlist
 ) ELSE (
@@ -1802,8 +2076,8 @@ SET       Format= --extract-audio --format "ba/b" --audio-format %AudioFormat% -
 SET       Format= --extract-audio --format "338/774/251/250/249" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -b:a 148k -c:a libopus -af \"pan=stereo^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-30dB:stop_threshold=-30dB:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="5" (
 SET       Format= --extract-audio --format "258/380/327/256/141/38/22/140/37/59/34/35/59/78/18" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -c:a libfdk_aac -vbr %AudioQuality% -afterburner 1 -af \"pan=stereo^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-30dB:stop_threshold=-30dB:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
-) ELSE (IF "%DefaultAuto%"=="1" (
-SET       Format= --extract-audio --format "ba/b"
+) ELSE (IF "%BestAudio%"=="1" (
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43"
 ) ELSE (
 SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
 )))))))))))
@@ -1921,9 +2195,43 @@ SET  OutTemplate= --output "%TargetFolder%\%%(uploader)s\%%(%Cyan-s%%playlist_da
 ) ELSE (
 SET  OutTemplate= --output "%TargetFolder%\%%(uploader)s\%%(album,playlist_title,playlist|)s\%%(meta_track_number,playlist_index,playlist_autonumber)02d. %%(title)s.%%(ext)s" 
 ))
-SET      Options= --ignore-errors --ignore-config --skip-playlist-after-errors 1
+IF NOT DEFINED stop_on_error (
+SET      Options= --ignore-errors --ignore-config
+) ELSE (
+SET      Options= --ignore-errors --ignore-config --skip-playlist-after-errors %stop_on_error%
+)
+IF NOT DEFINED proxy (
 SET      Network= --add-headers "User-Agent:%User-Agent%"
-SET  GeoRestrict= --xff "default"
+) ELSE (IF "%proxy-option%"=="1" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="2" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="3" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="4" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "%Proxy%"
+)))))
+IF NOT DEFINED geo-bypass (
+SET  GeoRestrict=
+) ELSE (IF "%geo-option%"=="1" (
+SET  GeoRestrict= --xff "%geo-bypass%"
+) ELSE (IF "%geo-option%"=="2" (
+SET  GeoRestrict= --xff "%geo_iso_code%"
+) ELSE (IF "%geo-option%"=="3" (
+SET  GeoRestrict= --xff "%geo_cidr%"
+) ELSE (IF "%geo-option%"=="4" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="5" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="6" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="7" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (
+SET  GeoRestrict= --xff "%geo-bypass%"
+))))))))
 IF "%OnlyNew%"=="1" (
 SET       Select= --download-archive "%Archive-Path%" --no-overwrites --yes-playlist --no-playlist-reverse
 ) ELSE (
@@ -1967,8 +2275,8 @@ SET       Format= --extract-audio --format "ba/b" --audio-format %AudioFormat% -
 SET       Format= --extract-audio --format "338/774/251/250/249" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -b:a 148k -c:a libopus -af \"pan=stereo^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-30dB:stop_threshold=-30dB:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="5" (
 SET       Format= --extract-audio --format "258/380/327/256/141/38/22/140/37/59/34/35/59/78/18" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -c:a libfdk_aac -vbr %AudioQuality% -afterburner 1 -af \"pan=stereo^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-30dB:stop_threshold=-30dB:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
-) ELSE (IF "%DefaultAuto%"=="1" (
-SET       Format= --extract-audio --format "ba/b"
+) ELSE (IF "%BestAudio%"=="1" (
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43"
 ) ELSE (
 SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
 )))))))))))
@@ -2068,8 +2376,38 @@ SET Downloaded-Video=& SET Downloaded-Audio=1& SET Downloaded-Manual=& SET Downl
 :doYTDL-video-preset-1
 SET  OutTemplate= --path "%TargetFolder%" --output "thumbnail:%TargetFolder%\%%(title)s\cover.%%(ext)s" --output "chapter:%TargetFolder%\%%(title)s\%%(section_title)s.%%(ext)s"
 SET      Options= --ignore-errors --ignore-config
+IF NOT DEFINED proxy (
 SET      Network= --add-headers "User-Agent:%User-Agent%"
-SET  GeoRestrict= --xff "default"
+) ELSE (IF "%proxy-option%"=="1" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="2" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="3" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="4" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "%Proxy%"
+)))))
+IF NOT DEFINED geo-bypass (
+SET  GeoRestrict=
+) ELSE (IF "%geo-option%"=="1" (
+SET  GeoRestrict= --xff "%geo-bypass%"
+) ELSE (IF "%geo-option%"=="2" (
+SET  GeoRestrict= --xff "%geo_iso_code%"
+) ELSE (IF "%geo-option%"=="3" (
+SET  GeoRestrict= --xff "%geo_cidr%"
+) ELSE (IF "%geo-option%"=="4" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="5" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="6" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="7" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (
+SET  GeoRestrict= --xff "%geo-bypass%"
+))))))))
 IF "%CustomChapters%"=="1" (
 SET       Select= --no-download-archive --no-playlist --split-chapters --extractor-args "youtube:chapters_file=%Chapters-Path%"
 ) ELSE (
@@ -2135,8 +2473,38 @@ SET Downloaded-Video=1& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downl
 :doYTDL-video-preset-2
 SET  OutTemplate= --output "%TargetFolder%\%%(artists.0,artist,uploader)s - %%(title)s.%%(ext)s"
 SET      Options= --ignore-errors --ignore-config
+IF NOT DEFINED proxy (
 SET      Network= --add-headers "User-Agent:%User-Agent%"
-SET  GeoRestrict= --xff "default"
+) ELSE (IF "%proxy-option%"=="1" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="2" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="3" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="4" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "%Proxy%"
+)))))
+IF NOT DEFINED geo-bypass (
+SET  GeoRestrict=
+) ELSE (IF "%geo-option%"=="1" (
+SET  GeoRestrict= --xff "%geo-bypass%"
+) ELSE (IF "%geo-option%"=="2" (
+SET  GeoRestrict= --xff "%geo_iso_code%"
+) ELSE (IF "%geo-option%"=="3" (
+SET  GeoRestrict= --xff "%geo_cidr%"
+) ELSE (IF "%geo-option%"=="4" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="5" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="6" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="7" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (
+SET  GeoRestrict= --xff "%geo-bypass%"
+))))))))
 IF "%OnlyNew%"=="1" (
 SET       Select= --download-archive "%Archive-Path%" --no-overwrites --no-download-archive --no-playlist
 ) ELSE (
@@ -2279,9 +2647,43 @@ ECHO   %Green-s%•%ColorOff%  Approximate DATE is %Cyan-s%%playlist_date%%Color
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 2 >nul
 SET  OutTemplate= --output "%TargetFolder%\%%(uploader)s\%%(%Cyan-s%%playlist_date%%ColorOff%,release_year,release_date>%%Y,upload_date>%%Y)s - %%(album,playlist_title,playlist|)s\%%(meta_track_number,playlist_index,playlist_autonumber)02d. %%(title)s.%%(ext)s"
-SET      Options= --ignore-errors --ignore-config --skip-playlist-after-errors 1
+IF NOT DEFINED stop_on_error (
+SET      Options= --ignore-errors --ignore-config
+) ELSE (
+SET      Options= --ignore-errors --ignore-config --skip-playlist-after-errors %stop_on_error%
+)
+IF NOT DEFINED proxy (
 SET      Network= --add-headers "User-Agent:%User-Agent%"
-SET  GeoRestrict= --xff "default"
+) ELSE (IF "%proxy-option%"=="1" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="2" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="3" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="4" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "%Proxy%"
+)))))
+IF NOT DEFINED geo-bypass (
+SET  GeoRestrict=
+) ELSE (IF "%geo-option%"=="1" (
+SET  GeoRestrict= --xff "%geo-bypass%"
+) ELSE (IF "%geo-option%"=="2" (
+SET  GeoRestrict= --xff "%geo_iso_code%"
+) ELSE (IF "%geo-option%"=="3" (
+SET  GeoRestrict= --xff "%geo_cidr%"
+) ELSE (IF "%geo-option%"=="4" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="5" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="6" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="7" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (
+SET  GeoRestrict= --xff "%geo-bypass%"
+))))))))
 IF "%OnlyNew%"=="1" (
 SET       Select= --download-archive "%Archive-Path%" --no-overwrites --yes-playlist --no-playlist-reverse
 ) ELSE (
@@ -2422,8 +2824,38 @@ SET  OutTemplate= --output "%TargetFolder%\%%(title)s.%%(ext)s"
 SET  OutTemplate= --output "%TargetFolder%\%%(title)s-transcript.%%(ext)s"
 ))
 SET      Options= --ignore-errors --ignore-config
+IF NOT DEFINED proxy (
 SET      Network= --add-headers "User-Agent:%User-Agent%"
-SET  GeoRestrict= --xff "default"
+) ELSE (IF "%proxy-option%"=="1" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="2" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="3" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="4" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "%Proxy%"
+)))))
+IF NOT DEFINED geo-bypass (
+SET  GeoRestrict=
+) ELSE (IF "%geo-option%"=="1" (
+SET  GeoRestrict= --xff "%geo-bypass%"
+) ELSE (IF "%geo-option%"=="2" (
+SET  GeoRestrict= --xff "%geo_iso_code%"
+) ELSE (IF "%geo-option%"=="3" (
+SET  GeoRestrict= --xff "%geo_cidr%"
+) ELSE (IF "%geo-option%"=="4" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="5" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="6" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="7" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (
+SET  GeoRestrict= --xff "%geo-bypass%"
+))))))))
 SET       Select=
 SET     Download= --skip-download --concurrent-fragments 1
 SET Sponsorblock=
@@ -2459,8 +2891,38 @@ SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downlo
 :comments-preset-1
 SET  OutTemplate= --output "%TargetFolder%\%%(title)s.%%(ext)s"
 SET      Options= --ignore-errors --ignore-config
+IF NOT DEFINED proxy (
 SET      Network= --add-headers "User-Agent:%User-Agent%"
-SET  GeoRestrict= --xff "default"
+) ELSE (IF "%proxy-option%"=="1" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="2" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="3" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="4" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "%Proxy%"
+)))))
+IF NOT DEFINED geo-bypass (
+SET  GeoRestrict=
+) ELSE (IF "%geo-option%"=="1" (
+SET  GeoRestrict= --xff "%geo-bypass%"
+) ELSE (IF "%geo-option%"=="2" (
+SET  GeoRestrict= --xff "%geo_iso_code%"
+) ELSE (IF "%geo-option%"=="3" (
+SET  GeoRestrict= --xff "%geo_cidr%"
+) ELSE (IF "%geo-option%"=="4" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="5" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="6" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="7" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (
+SET  GeoRestrict= --xff "%geo-bypass%"
+))))))))
 SET       Select=
 SET     Download= --skip-download
 SET Sponsorblock=
@@ -2544,8 +3006,38 @@ SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downlo
 :doYTDL-preset-stream-1
 SET  OutTemplate= --output -
 SET      Options= --ignore-errors --ignore-config
+IF NOT DEFINED proxy (
 SET      Network= --add-headers "User-Agent:%User-Agent%"
-SET  GeoRestrict= --xff "default"
+) ELSE (IF "%proxy-option%"=="1" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="2" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="3" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="4" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "%Proxy%"
+)))))
+IF NOT DEFINED geo-bypass (
+SET  GeoRestrict=
+) ELSE (IF "%geo-option%"=="1" (
+SET  GeoRestrict= --xff "%geo-bypass%"
+) ELSE (IF "%geo-option%"=="2" (
+SET  GeoRestrict= --xff "%geo_iso_code%"
+) ELSE (IF "%geo-option%"=="3" (
+SET  GeoRestrict= --xff "%geo_cidr%"
+) ELSE (IF "%geo-option%"=="4" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="5" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="6" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="7" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (
+SET  GeoRestrict= --xff "%geo-bypass%"
+))))))))
 SET       Select=
 SET     Download= --limit-rate %SpeedLimit% --concurrent-fragments %Threads% --downloader "%FFmpeg-Path%"
 SET Sponsorblock=
@@ -2589,8 +3081,38 @@ SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downlo
 :sections-preset-1
 SET  OutTemplate= --output "%TargetFolder%\%%(title)s_%%(duration)s.%%(ext)s"
 SET      Options= --ignore-errors --ignore-config
+IF NOT DEFINED proxy (
 SET      Network= --add-headers "User-Agent:%User-Agent%"
-SET  GeoRestrict= --xff "default"
+) ELSE (IF "%proxy-option%"=="1" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="2" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "http://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="3" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_adress%"
+) ELSE (IF "%proxy-option%"=="4" (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "socks5://%proxy_username%:%proxy_password%@%proxy_adress%"
+) ELSE (
+SET      Network= --add-headers "User-Agent:%User-Agent%" --proxy "%Proxy%"
+)))))
+IF NOT DEFINED geo-bypass (
+SET  GeoRestrict=
+) ELSE (IF "%geo-option%"=="1" (
+SET  GeoRestrict= --xff "%geo-bypass%"
+) ELSE (IF "%geo-option%"=="2" (
+SET  GeoRestrict= --xff "%geo_iso_code%"
+) ELSE (IF "%geo-option%"=="3" (
+SET  GeoRestrict= --xff "%geo_cidr%"
+) ELSE (IF "%geo-option%"=="4" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="5" (
+SET  GeoRestrict= --geo-verification-proxy "http://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="6" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_adress%"
+) ELSE (IF "%geo-option%"=="7" (
+SET  GeoRestrict= --geo-verification-proxy "socks5://%geo_proxy_username%:%geo_proxy_password%@%geo_proxy_adress%"
+) ELSE (
+SET  GeoRestrict= --xff "%geo-bypass%"
+))))))))
 IF "%DoSections%"=="1" (
 SET       Select= --download-sections "*%section1%"
 ) ELSE (IF "%DoSections%"=="2" (
@@ -2650,8 +3172,8 @@ SET       Format= --extract-audio --format "ba/b" --audio-format %AudioFormat% -
 SET       Format= --extract-audio --format "338/774/251/250/249" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -b:a 148k -c:a libopus -af \"pan=stereo^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-30dB:stop_threshold=-30dB:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="5" (
 SET       Format= --extract-audio --format "258/380/327/256/141/38/22/140/37/59/34/35/59/78/18" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -c:a libfdk_aac -vbr %AudioQuality% -afterburner 1 -af \"pan=stereo^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=0 0:1 1:-90/-900 -70/-70 -30/-9 0/-3:6:3:0:0,bass=g=4:f=110:w=0.6,dynaudnorm,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-30dB:stop_threshold=-30dB:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
-) ELSE (IF "%DefaultAuto%"=="1" (
-SET       Format= --extract-audio --format "ba/b"
+) ELSE (IF "%BestAudio%"=="1" (
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43"
 ) ELSE (IF "%SectionsAudio%"=="1" (
 SET       Format= --extract-audio --audio-format %AudioFormat% --audio-quality %AudioQuality%
 ) ELSE (IF "%CustomFormatVideo%"=="1" (
@@ -2740,7 +3262,7 @@ ECHO.
 :: test thing to reset without script quiting
 SET /P doYTDL=!BS!%spcs%'Enter' to Download or Type 'r' to Return to Main Menu: 
 IF NOT DEFINED doYTDL GOTO :doYTDL
-IF "!doYTDL!"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET DefaultAuto=& SET ALBUM=& SET doYTDL=& GOTO :start
+IF "!doYTDL!"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET BestAudio=& SET ALBUM=& SET doYTDL=& GOTO :start
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  Invalid choice, please try again.
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -2748,12 +3270,17 @@ timeout /t 2 >nul
 GOTO :doYTDL-check
 
 :doYTDL
+cls
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  DOWNLOADING...
 ECHO ------------------------------------------------------------------------------------------------------------------------
-REM ECHO.
-"%YTdlp-Path%"%OutTemplate%%Options%%Network%%GeoRestrict%%Select%%Download%%Sponsorblock%%FileSystem%%Thumbnail%%Verbosity%%WorkArounds%%Format%%Subtitle%%Comments%%Authenticate%%AdobePass%%PreProcess%%PostProcess%%ReplayGain%%Duration%%Date_Filter% "%URL%"
-IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Bold%%appErr%%ColorOff%.
+"%YTdlp-Path%"%OutTemplate%%Options%%Network%%GeoRestrict%%Select%%Download%%Sponsorblock%%FileSystem%%Thumbnail%%Verbosity%%WorkArounds%%Format%%Subtitle%%Comments%%Authenticate%%AdobePass%%PreProcess%%PostProcess%%ReplayGain%%Duration%%Date_Filter% "%URL%" 2>>"%TEMP%\yt-dlp-log.txt"
+:: another test thing to print error messages after big downloads
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Red-s%•%ColorOff%  COLLECTED ERRORS
+ECHO ------------------------------------------------------------------------------------------------------------------------
+FOR /f "delims=" %%a IN ('type "%TEMP%\yt-dlp-log.txt"') DO ECHO %%a & del /q "%TEMP%\yt-dlp-log.txt" 2> nul
+IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Cyan-s%%appErr%%ColorOff%.
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -2792,7 +3319,7 @@ IF DEFINED StreamVideoFormat (
 ) ELSE (IF DEFINED StreamAudioFormat (
 "%YTdlp-Path%"%Options%%Network%%GeoRestrict%%Select%%Sponsorblock%%Thumbnail%%Verbosity%%WorkArounds%%Subtitle%%Comments%%Authenticate%%AdobePass%%PreProcess%%PostProcess%%FileSystem%%OutTemplate%%Download%%Format% "%URL%"| "%A-Player-Path%" -
 ))
-IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Bold%%appErr%%ColorOff%.
+IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Cyan-s%%appErr%%ColorOff%.
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -2830,7 +3357,7 @@ ECHO   %Yellow-s%•%ColorOff%  DOWNLOADING...
 ECHO ------------------------------------------------------------------------------------------------------------------------
 REM ECHO.
 "%YTdlp-Path%"%OutTemplate%%Options%%Network%%GeoRestrict%%Select%%Download%%Sponsorblock%%FileSystem%%Thumbnail%%Verbosity%%WorkArounds%%Format%%Subtitle%%Comments%%Authenticate%%AdobePass%%PreProcess%%PostProcess% "%URL%"
-IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Bold%%appErr%%ColorOff%.
+IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Cyan-s%%appErr%%ColorOff%.
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -2844,7 +3371,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  DOWNLOADING...
 ECHO ------------------------------------------------------------------------------------------------------------------------
 "%YTdlp-Path%"%OutTemplate%%Options%%Network%%GeoRestrict%%Select%%Download%%Sponsorblock%%FileSystem%%Thumbnail%%Verbosity%%WorkArounds%%Format%%Subtitle%%Comments%%Authenticate%%AdobePass%%PreProcess%%PostProcess% "%URL%"
-IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Bold%%appErr%%ColorOff%.
+IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Cyan-s%%appErr%%ColorOff%.
 SET clipboard=
 SET Downloaded-Quick=1
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -2879,7 +3406,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  DOWNLOADING...
 ECHO ------------------------------------------------------------------------------------------------------------------------
 "%YTdlp-Path%"%OutTemplate%%Options%%Network%%GeoRestrict%%Select%%Download%%Sponsorblock%%FileSystem%%Thumbnail%%Verbosity%%WorkArounds%%Format%%Subtitle%%Comments%%Authenticate%%AdobePass%%PreProcess%%PostProcess% "%URL%"
-IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Bold%%appErr%%ColorOff%.
+IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Cyan-s%%appErr%%ColorOff%.
 SET clipboard=
 SET Downloaded-Quick=1
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -2903,7 +3430,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  DOWNLOADING...
 ECHO ------------------------------------------------------------------------------------------------------------------------
 "%YTdlp-Path%"%OutTemplate%%Options%%Network%%GeoRestrict%%Select%%Download%%Sponsorblock%%FileSystem%%Thumbnail%%Verbosity%%WorkArounds%%Format%%Subtitle%%Comments%%Authenticate%%AdobePass%%PreProcess%%PostProcess% "%*"
-IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Bold%%appErr%%ColorOff%.
+IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Cyan-s%%appErr%%ColorOff%.
 SET Downloaded-Drag=1
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
@@ -2939,7 +3466,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  DOWNLOADING...
 ECHO ------------------------------------------------------------------------------------------------------------------------
 "%YTdlp-Path%"%OutTemplate%%Options%%Network%%GeoRestrict%%Select%%Download%%Sponsorblock%%FileSystem%%Thumbnail%%Verbosity%%WorkArounds%%Format%%Subtitle%%Comments%%Authenticate%%AdobePass%%PreProcess%%PostProcess% "%*"
-IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Bold%%appErr%%ColorOff%.
+IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Cyan-s%%appErr%%ColorOff%.
 SET Downloaded-Drag=1
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
