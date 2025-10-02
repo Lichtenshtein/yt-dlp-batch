@@ -6,7 +6,7 @@
 :: and text files may be used. text files are found 
 :: and processed first, then all URLs.
 ::
-:: v1.6 28.09.2025 Lichtenshtein
+:: v1.7 02.10.2025 Lichtenshtein
 
 :: to convert comments to readable HTML python needs to be installed
 :: then you may also need to install "pip install json2html"
@@ -287,8 +287,8 @@ ECHO   %Cyan-s%2%ColorOff%. Download Video
 ECHO   %Cyan-s%3%ColorOff%. Download Manually
 ECHO   %Cyan-s%4%ColorOff%. Download Subtitles Only
 ECHO   %Cyan-s%5%ColorOff%. Download Comments Only
-ECHO   %Cyan-s%6%ColorOff%. Download Section
-ECHO   %Cyan-s%7%ColorOff%. Stream to Player
+ECHO   %Cyan-s%6%ColorOff%. Stream to Player
+ECHO   %Cyan-s%7%ColorOff%. Section/Chapter Splitter
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%e%ColorOff%. Enter URL		%Yellow-s%t%ColorOff%. Set Duration Filter
 ECHO   %Yellow-s%w%ColorOff%. Set Downloader	%Yellow-s%d%ColorOff%. Set Date Filter
@@ -302,8 +302,8 @@ IF "%choice%"=="2" GOTO :select-format-video
 IF "%choice%"=="3" GOTO :select-format-manual
 IF "%choice%"=="4" GOTO :select-preset-subs
 IF "%choice%"=="5" GOTO :select-preset-comments
-IF "%choice%"=="6" GOTO :select-preset-sections
-IF "%choice%"=="7" GOTO :select-format-stream
+IF "%choice%"=="6" GOTO :select-format-stream
+IF "%choice%"=="7" GOTO :select-preset-sections
 IF "%choice%"=="e" GOTO :getURL-re-enter
 IF "%choice%"=="v" GOTO :info
 IF "%choice%"=="x" GOTO :error-info
@@ -574,17 +574,17 @@ GOTO :start
 :continue
 cls
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Blue-s%•%ColorOff%  CONTINUE
+ECHO   %Blue-s%•%ColorOff%  CONTINUE DOWNLOAD
 ECHO ------------------------------------------------------------------------------------------------------------------------
 :: meant for download another link with same params
-ECHO   %Cyan-s%1%ColorOff%. Download Another?
+ECHO   %Cyan-s%1%ColorOff%. New URL ^(same parameters^)
 :: meant to retry failed download with same params (in case if link is invalid)
-ECHO   %Cyan-s%2%ColorOff%. Retry
-:: resets all variables
-ECHO   %Cyan-s%3%ColorOff%. Main Menu
+ECHO   %Cyan-s%2%ColorOff%. Retry ^(same parameters^)
 ECHO ------------------------------------------------------------------------------------------------------------------------
 :: re-enter link to retry the download
 ECHO   %Yellow-s%e%ColorOff%. Re-Enter URL
+:: resets all variables
+ECHO   %Yellow-s%r%ColorOff%. Main Menu
 :: this seems useless here, params won't change from within this menu
 REM ECHO   %Yellow-s%w%ColorOff%. Set Downloader
 ECHO   %Red-s%q%ColorOff%. Exit
@@ -612,7 +612,7 @@ GOTO :doYTDL-quick
 ) ELSE (
 ECHO   %Red-s%•%ColorOff%  Nothing to Retry. & GOTO :continue
 ))))))))))
-IF "%choice%"=="3" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET ALBUM=& GOTO :start
+IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET ALBUM=& GOTO :start
 IF "%choice%"=="e" GOTO :getURL-re-enter
 REM IF "%choice%"=="w" GOTO :aria
 IF "%choice%"=="q" GOTO :exit
@@ -891,6 +891,7 @@ ECHO   %Cyan-s%7%ColorOff%. Audio Album + Crop Thumbnail			%Cyan-s%22%ColorOff%.
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Cyan-s%8%ColorOff%. Audio Playlist					%Cyan-s%23%ColorOff%. Audio Playlist + Only New
 ECHO   %Cyan-s%9%ColorOff%. Audio Playlist + Crop Thumbnail			%Cyan-s%24%ColorOff%. Audio Playlist + Crop Thumbnail + Only New
+ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO  %Cyan-s%10%ColorOff%. Audio Playlist Various Artists			%Cyan-s%25%ColorOff%. Audio Playlist Various Artists + Only New
 ECHO  %Cyan-s%11%ColorOff%. Audio Playlist Various Artists + Crop Thumbnail	%Cyan-s%26%ColorOff%. Audio Playlist Various Artists + Crop + Only New
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -1681,7 +1682,7 @@ SET Sponsorblock= --no-sponsorblock
 SET   FileSystem= --cache-dir "%YTdlp-Cache-Dir%" --no-mtime --no-part --ffmpeg-location "%FFmpeg-Path%"
 :: --embed-thumbnail with --split-chapters is broken https://github.com/yt-dlp/yt-dlp/issues/6225
 IF "%CropThumb%"=="1" (
-SET    Thumbnail= --no-embed-thumbnail --write-thumbnail --exec "after_move:\"%FFmpeg-Path%\" -v quiet -i \"%TargetFolder%\\%%^(title^)s\\cover.webp\" -y -c:v mjpeg -q:v 3 -vf crop=\"'if^(gt^(ih,iw^),iw,ih^)':'if^(gt^(iw,ih^),ih,iw^)'\" \"%TargetFolder%\\%%^(title^)s\\cover.%Thumb-Format%\"" --exec "after_move:del /q \"%TargetFolder%\\%%^(title^)s\\cover.webp\""
+SET    Thumbnail= --no-embed-thumbnail --write-thumbnail --exec "after_move:\"%FFmpeg-Path%\" -v quiet -i \"%TargetFolder%\\%%^(title^)s\\cover.webp\" -y -c:v %FFmpeg-Thumb-Format% -q:v %Thumb-Compress% -vf crop=\"'if^(gt^(ih,iw^),iw,ih^)':'if^(gt^(iw,ih^),ih,iw^)'\" \"%TargetFolder%\\%%^(title^)s\\cover.%Thumb-Format%\"" --exec "after_move:del /q \"%TargetFolder%\\%%^(title^)s\\cover.webp\""
 ) ELSE (
 SET    Thumbnail= --no-embed-thumbnail --write-thumbnail --convert-thumbnail %Thumb-Format% --postprocessor-args "ThumbnailsConvertor:-q:v %Thumb-Compress%"
 )
@@ -1725,9 +1726,19 @@ SET    AdobePass=
 :: --parse-metadata "%%(artist,artists,creator,uploader)s:%%(meta_artist)s" --parse-metadata "%%(album,playlist_title)s:%%(meta_album)s"
 SET   PreProcess= --parse-metadata "title:%%(artist)s - %%(album)s" --parse-metadata "%%(chapters|)l:(?P<has_chapters>.)" --parse-metadata "%%(epoch>%%Y-%%m-%%d)s:%%(meta_download_date)s" --parse-metadata "%%(album_artist,album_artists,artist,uploader)s:%%(meta_album_artist)s" --parse-metadata "%%(average_rating)s:%%(meta_rating)s" --parse-metadata "%%(composer,composers)s:%%(meta_composer)s" --parse-metadata "%%(disc_number)s:%%(meta_disc)s" --parse-metadata "%%(dislike_count)s:%%(meta_dislikes)s" --parse-metadata "%%(genre,genres)s:%%(meta_genre)s" --parse-metadata "%%(like_count)s:%%(meta_likes)s" --parse-metadata "%%(playlist_index,track_number|01)s:%%(meta_track)s" --parse-metadata "%%(release_date>%%Y-%%m-%%d,release_year,upload_date>%%Y-%%m-%%d)s:%%(meta_date)s" --parse-metadata "%%(view_count)s:%%(meta_views)s" --parse-metadata ":(?P<meta_longdescription>)" --parse-metadata ":(?P<meta_synopsis>)" --parse-metadata ":(?P<meta_encodersettings>)" --parse-metadata ":(?P<meta_purl>)" --parse-metadata "webpage_url:%%(meta_www)s" --replace-in-metadata meta_album_artist " - Topic" "" --replace-in-metadata meta_date "^NA$" "" --replace-in-metadata meta_rating "^NA$" "" --replace-in-metadata meta_views "^NA$" "" --replace-in-metadata meta_likes "^NA$" "" --replace-in-metadata meta_dislikes "^NA$" "" --replace-in-metadata meta_disc "^NA$" "" --replace-in-metadata meta_encodersettings "^.*$" "" --replace-in-metadata meta_composer "^NA$" "" --replace-in-metadata meta_album "^NA$" "" --replace-in-metadata meta_genre "^NA$" "" --replace-in-metadata title "/" "⁄" --replace-in-metadata title ":" "꞉" --replace-in-metadata album "/" "⁄" --replace-in-metadata album ":" "꞉"
 SET  PostProcess= --embed-metadata --no-embed-chapters --compat-options no-attach-info-json --exec "after_move:del /q %%(filepath,_filename|)q"
+IF NOT DEFINED use_pl_replaygain (
+SET   ReplayGain=
+) ELSE (IF "%ReplayGainPreset%"=="1" (
+SET   ReplayGain= --use-postprocessor ReplayGain:when=after_move
+) ELSE (IF "%ReplayGainPreset%"=="2" (
+SET   ReplayGain= --use-postprocessor ReplayGain:when=playlist
+) ELSE (IF "%ReplayGainPreset%"=="3" (
+SET   ReplayGain= --use-postprocessor "ReplayGain:when=playlist;no_album=true"
+))))
+SET     Duration=
+SET  Date_Filter=
 :: setting variables for continue menu
 SET Downloaded-Video=& SET Downloaded-Audio=1& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET Downloaded-Quick=& GOTO :doYTDL-check
-
 
 :: AUDIO SINGLE PRESET
 :doYTDL-audio-preset-2
@@ -1854,31 +1865,31 @@ SET     Duration= --match-filters "is_live"
 SET     Duration= --match-filters "!is_live"
 ))))))))))))))))
 IF NOT DEFINED date_filter (
-SET         Date=
+SET  Date_Filter=
 ) ELSE (IF "%date_filter%"=="1" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1%"
 ) ELSE (IF "%date_filter%"=="2" (
-SET         Date= --break-match-filters "upload_date >= %date_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date >= %date_filter_1%"
 ) ELSE (IF "%date_filter%"=="3" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2%"
 ) ELSE (IF "%date_filter%"=="4" (
-SET         Date= --break-match-filters "upload_date == %date_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date == %date_filter_1%"
 ) ELSE (IF "%date_filter%"=="5" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & duration%duration_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & duration%duration_filter_1%"
 ) ELSE (IF "%date_filter%"=="6" (
-SET         Date= --break-match-filters "upload_date >= %date_filter_1% & duration%duration_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date >= %date_filter_1% & duration%duration_filter_1%"
 ) ELSE (IF "%date_filter%"=="7" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2% & duration%duration_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2% & duration%duration_filter_1%"
 ) ELSE (IF "%date_filter%"=="8" (
-SET         Date= --break-match-filters "upload_date == %date_filter_1% & duration%duration_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date == %date_filter_1% & duration%duration_filter_1%"
 ) ELSE (IF "%date_filter%"=="9" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
 ) ELSE (IF "%date_filter%"=="10" (
-SET         Date= --break-match-filters "upload_date >= %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date >= %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
 ) ELSE (IF "%date_filter%"=="11" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2% & duration%duration_filter_1% & duration%duration_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2% & duration%duration_filter_1% & duration%duration_filter_2%"
 ) ELSE (IF "%date_filter%"=="12" (
-SET         Date= --break-match-filters "upload_date == %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date == %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
 )))))))))))))
 :: setting variables for continue menu
 SET Downloaded-Video=& SET Downloaded-Audio=1& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET Downloaded-Quick=& GOTO :doYTDL-check
@@ -1888,14 +1899,18 @@ SET Downloaded-Video=& SET Downloaded-Audio=1& SET Downloaded-Manual=& SET Downl
 :: this is an experiment to get an approximate playlist creation date
 :: i'm getting the earliest date of all uploaded videos in it and set it to variable
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Yellow-s%•%ColorOff%  Getting playlist creation date...
+ECHO   %Yellow-s%•%ColorOff%  Getting the approximate playlist/album creation DATE...
 ECHO ------------------------------------------------------------------------------------------------------------------------
 "%YTdlp-Path%" --no-warnings --quiet --simulate --flat-playlist --extractor-args "youtubetab:approximate_date" --print "%%(upload_date>%%Y)s" "%URL%" | sort | "%head-Path%" -n 1 | "%tr-Path%" -d '\012\015' | clip >NUL 2>&1
 FOR /f "delims=" %%i IN ('%mshta%') DO SET "playlist_date=%%i"
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Green-s%•%ColorOff%  Approximate DATE is %Cyan-s%%playlist_date%%ColorOff%
+ECHO ------------------------------------------------------------------------------------------------------------------------
+timeout /t 2 >nul
 IF "%VariousArtists%"=="1" (
 SET  OutTemplate= --output "%TargetFolder%\%%(uploader)s\%%(album,playlist_title,playlist|)s\%%(meta_track_number,playlist_index,playlist_autonumber)02d. %%(artist,artists,creator,uploader)s - %%(title)s.%%(ext)s"
 ) ELSE (IF "%Album%"=="1" (
-SET  OutTemplate= --output "%TargetFolder%\%%(uploader)s\%%(%playlist_date%,release_year,release_date>%%Y,upload_date>%%Y)s - %%(album,playlist_title,playlist|)s\%%(meta_track_number,playlist_index,playlist_autonumber)02d. %%(title)s.%%(ext)s" 
+SET  OutTemplate= --output "%TargetFolder%\%%(uploader)s\%%(%Cyan-s%%playlist_date%%ColorOff%,release_year,release_date>%%Y,upload_date>%%Y)s - %%(album,playlist_title,playlist|)s\%%(meta_track_number,playlist_index,playlist_autonumber)02d. %%(title)s.%%(ext)s" 
 ) ELSE (
 SET  OutTemplate= --output "%TargetFolder%\%%(uploader)s\%%(album,playlist_title,playlist|)s\%%(meta_track_number,playlist_index,playlist_autonumber)02d. %%(title)s.%%(ext)s" 
 ))
@@ -2005,31 +2020,31 @@ SET     Duration= --match-filters "is_live"
 SET     Duration= --match-filters "!is_live"
 ))))))))))))))))
 IF NOT DEFINED date_filter (
-SET         Date=
+SET  Date_Filter=
 ) ELSE (IF "%date_filter%"=="1" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1%"
 ) ELSE (IF "%date_filter%"=="2" (
-SET         Date= --break-match-filters "upload_date >= %date_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date >= %date_filter_1%"
 ) ELSE (IF "%date_filter%"=="3" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2%"
 ) ELSE (IF "%date_filter%"=="4" (
-SET         Date= --break-match-filters "upload_date == %date_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date == %date_filter_1%"
 ) ELSE (IF "%date_filter%"=="5" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & duration%duration_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & duration%duration_filter_1%"
 ) ELSE (IF "%date_filter%"=="6" (
-SET         Date= --break-match-filters "upload_date >= %date_filter_1% & duration%duration_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date >= %date_filter_1% & duration%duration_filter_1%"
 ) ELSE (IF "%date_filter%"=="7" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2% & duration%duration_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2% & duration%duration_filter_1%"
 ) ELSE (IF "%date_filter%"=="8" (
-SET         Date= --break-match-filters "upload_date == %date_filter_1% & duration%duration_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date == %date_filter_1% & duration%duration_filter_1%"
 ) ELSE (IF "%date_filter%"=="9" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
 ) ELSE (IF "%date_filter%"=="10" (
-SET         Date= --break-match-filters "upload_date >= %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date >= %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
 ) ELSE (IF "%date_filter%"=="11" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2% & duration%duration_filter_1% & duration%duration_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2% & duration%duration_filter_1% & duration%duration_filter_2%"
 ) ELSE (IF "%date_filter%"=="12" (
-SET         Date= --break-match-filters "upload_date == %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date == %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
 )))))))))))))
 :: setting variables for continue menu
 SET Downloaded-Video=& SET Downloaded-Audio=1& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET Downloaded-Quick=& GOTO :doYTDL-check
@@ -2059,7 +2074,7 @@ SET     Download= --limit-rate %SpeedLimit% --concurrent-fragments %Threads%
 SET Sponsorblock= --sponsorblock-mark sponsor,preview --sponsorblock-remove sponsor,preview --sponsorblock-api "%Sponsorblock-Api%" 
 SET   FileSystem= --cache-dir "%YTdlp-Cache-Dir%" --no-mtime --no-part --ffmpeg-location "%FFmpeg-Path%"
 IF "%CropThumb%"=="1" (
-SET    Thumbnail= --no-embed-thumbnail --write-thumbnail --exec "after_move:\"%FFmpeg-Path%\" -v quiet -i \"%TargetFolder%\\%%^(title^)s\\cover.webp\" -y -c:v mjpeg -q:v 3 -vf crop=\"'if^(gt^(ih,iw^),iw,ih^)':'if^(gt^(iw,ih^),ih,iw^)'\" \"%TargetFolder%\\%%^(title^)s\\cover.%Thumb-Format%\"" --exec "after_move:del /q \"%TargetFolder%\\%%^(title^)s\\cover.webp\""
+SET    Thumbnail= --no-embed-thumbnail --write-thumbnail --exec "after_move:\"%FFmpeg-Path%\" -v quiet -i \"%TargetFolder%\\%%^(title^)s\\cover.webp\" -y -c:v %FFmpeg-Thumb-Format% -q:v %Thumb-Compress% -vf crop=\"'if^(gt^(ih,iw^),iw,ih^)':'if^(gt^(iw,ih^),ih,iw^)'\" \"%TargetFolder%\\%%^(title^)s\\cover.%Thumb-Format%\"" --exec "after_move:del /q \"%TargetFolder%\\%%^(title^)s\\cover.webp\""
 ) ELSE (
 SET    Thumbnail= --no-embed-thumbnail --write-thumbnail --convert-thumbnail %Thumb-Format% --postprocessor-args "ThumbnailsConvertor:-q:v %Thumb-Compress%"
 )
@@ -2101,6 +2116,9 @@ SET    AdobePass=
 SET   PreProcess= --parse-metadata "%%(chapters|)l:(?P<has_chapters>.)" --parse-metadata "%%(epoch>%%Y-%%m-%%d)s:%%(meta_download_date)s" --parse-metadata "%%(album,playlist_title)s:%%(meta_album)s" --parse-metadata "%%(album_artist,album_artists,artist,uploader)s:%%(meta_album_artist)s" --parse-metadata "%%(artist,artists.0,creator,uploader)s:%%(meta_artist)s" --parse-metadata "%%(average_rating)s:%%(meta_rating)s" --parse-metadata "%%(composer,composers)s:%%(meta_composer)s" --parse-metadata "%%(disc_number)s:%%(meta_disc)s" --parse-metadata "%%(dislike_count)s:%%(meta_dislikes)s" --parse-metadata "%%(genre,genres)s:%%(meta_genre)s" --parse-metadata "%%(like_count)s:%%(meta_likes)s" --parse-metadata "%%(playlist_index,track_number|01)s:%%(meta_track)s" --parse-metadata "%%(release_date>%%Y-%%m-%%d,release_year,upload_date>%%Y-%%m-%%d)s:%%(meta_date)s" --parse-metadata "%%(view_count)s:%%(meta_views)s" --parse-metadata "description:(?s)(?P<meta_comment>.+)" --parse-metadata ":(?P<meta_description>)" --parse-metadata ":(?P<meta_longdescription>)" --parse-metadata ":(?P<meta_synopsis>)" --parse-metadata ":(?P<meta_encodersettings>)" --parse-metadata ":(?P<meta_purl>)" --parse-metadata "webpage_url:%%(meta_www)s" --replace-in-metadata meta_album_artist " - Topic" "" --replace-in-metadata meta_date "^NA$" "" --replace-in-metadata meta_rating "^NA$" "" --replace-in-metadata meta_views "^NA$" "" --replace-in-metadata meta_likes "^NA$" "" --replace-in-metadata meta_dislikes "^NA$" "" --replace-in-metadata meta_disc "^NA$" "" --replace-in-metadata meta_encodersettings "^.*$" "" --replace-in-metadata meta_composer "^NA$" "" --replace-in-metadata meta_album "^NA$" "" --replace-in-metadata meta_genre "^NA$" "" --replace-in-metadata title "/" "⁄" --replace-in-metadata title ":" "꞉" --replace-in-metadata album "/" "⁄" --replace-in-metadata album ":" "꞉"
 :: --embed-thumbnail with --split-chapters is broken https://github.com/yt-dlp/yt-dlp/issues/6225
 SET  PostProcess= --embed-metadata --no-embed-chapters --compat-options no-attach-info-json --force-keyframes-at-cuts --match-filters "has_chapters" --exec "after_move:del /q %%(filepath,_filename|)q"
+SET ReplayGain=
+SET Duration=
+SET Date_Filter=
 :: setting variables for continue menu
 SET Downloaded-Video=1& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET Downloaded-Quick=& GOTO :doYTDL-check
 
@@ -2210,31 +2228,31 @@ SET     Duration= --match-filters "is_live"
 SET     Duration= --match-filters "!is_live"
 ))))))))))))))))
 IF NOT DEFINED date_filter (
-SET         Date=
+SET  Date_Filter=
 ) ELSE (IF "%date_filter%"=="1" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1%"
 ) ELSE (IF "%date_filter%"=="2" (
-SET         Date= --break-match-filters "upload_date >= %date_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date >= %date_filter_1%"
 ) ELSE (IF "%date_filter%"=="3" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2%"
 ) ELSE (IF "%date_filter%"=="4" (
-SET         Date= --break-match-filters "upload_date == %date_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date == %date_filter_1%"
 ) ELSE (IF "%date_filter%"=="5" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & duration%duration_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & duration%duration_filter_1%"
 ) ELSE (IF "%date_filter%"=="6" (
-SET         Date= --break-match-filters "upload_date >= %date_filter_1% & duration%duration_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date >= %date_filter_1% & duration%duration_filter_1%"
 ) ELSE (IF "%date_filter%"=="7" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2% & duration%duration_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2% & duration%duration_filter_1%"
 ) ELSE (IF "%date_filter%"=="8" (
-SET         Date= --break-match-filters "upload_date == %date_filter_1% & duration%duration_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date == %date_filter_1% & duration%duration_filter_1%"
 ) ELSE (IF "%date_filter%"=="9" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
 ) ELSE (IF "%date_filter%"=="10" (
-SET         Date= --break-match-filters "upload_date >= %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date >= %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
 ) ELSE (IF "%date_filter%"=="11" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2% & duration%duration_filter_1% & duration%duration_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2% & duration%duration_filter_1% & duration%duration_filter_2%"
 ) ELSE (IF "%date_filter%"=="12" (
-SET         Date= --break-match-filters "upload_date == %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date == %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
 )))))))))))))
 :: setting variables for continue menu
 SET Downloaded-Video=1& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET Downloaded-Quick=& GOTO :doYTDL-check
@@ -2242,11 +2260,15 @@ SET Downloaded-Video=1& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downl
 :: VIDEO PLAYLIST PRESET
 :doYTDL-video-preset-3
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Yellow-s%•%ColorOff%  Getting playlist creation date...
+ECHO   %Yellow-s%•%ColorOff%  Getting the approximate playlist/album creation DATE...
 ECHO ------------------------------------------------------------------------------------------------------------------------
 "%YTdlp-Path%" --no-warnings --quiet --simulate --flat-playlist --extractor-args "youtubetab:approximate_date" --print "%%(upload_date>%%Y)s" "%URL%" | sort | "%head-Path%" -n 1 | "%tr-Path%" -d '\012\015' | clip >NUL 2>&1
 FOR /f "delims=" %%i IN ('%mshta%') DO SET "playlist_date=%%i"
-SET  OutTemplate= --output "%TargetFolder%\%%(uploader)s\%%(%playlist_date%,release_year,release_date>%%Y,upload_date>%%Y)s - %%(album,playlist_title,playlist|)s\%%(meta_track_number,playlist_index,playlist_autonumber)02d. %%(title)s.%%(ext)s"
+ECHO ------------------------------------------------------------------------------------------------------------------------
+ECHO   %Green-s%•%ColorOff%  Approximate DATE is %Cyan-s%%playlist_date%%ColorOff%
+ECHO ------------------------------------------------------------------------------------------------------------------------
+timeout /t 2 >nul
+SET  OutTemplate= --output "%TargetFolder%\%%(uploader)s\%%(%Cyan-s%%playlist_date%%ColorOff%,release_year,release_date>%%Y,upload_date>%%Y)s - %%(album,playlist_title,playlist|)s\%%(meta_track_number,playlist_index,playlist_autonumber)02d. %%(title)s.%%(ext)s"
 SET      Options= --ignore-errors --ignore-config --skip-playlist-after-errors 1
 SET      Network= --add-headers "User-Agent:%User-Agent%"
 SET  GeoRestrict= --xff "default"
@@ -2346,31 +2368,31 @@ SET     Duration= --match-filters "is_live"
 SET     Duration= --match-filters "!is_live"
 ))))))))))))))))
 IF NOT DEFINED date_filter (
-SET         Date=
+SET  Date_Filter=
 ) ELSE (IF "%date_filter%"=="1" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1%"
 ) ELSE (IF "%date_filter%"=="2" (
-SET         Date= --break-match-filters "upload_date >= %date_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date >= %date_filter_1%"
 ) ELSE (IF "%date_filter%"=="3" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2%"
 ) ELSE (IF "%date_filter%"=="4" (
-SET         Date= --break-match-filters "upload_date == %date_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date == %date_filter_1%"
 ) ELSE (IF "%date_filter%"=="5" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & duration%duration_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & duration%duration_filter_1%"
 ) ELSE (IF "%date_filter%"=="6" (
-SET         Date= --break-match-filters "upload_date >= %date_filter_1% & duration%duration_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date >= %date_filter_1% & duration%duration_filter_1%"
 ) ELSE (IF "%date_filter%"=="7" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2% & duration%duration_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2% & duration%duration_filter_1%"
 ) ELSE (IF "%date_filter%"=="8" (
-SET         Date= --break-match-filters "upload_date == %date_filter_1% & duration%duration_filter_1%"
+SET  Date_Filter= --break-match-filters "upload_date == %date_filter_1% & duration%duration_filter_1%"
 ) ELSE (IF "%date_filter%"=="9" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
 ) ELSE (IF "%date_filter%"=="10" (
-SET         Date= --break-match-filters "upload_date >= %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date >= %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
 ) ELSE (IF "%date_filter%"=="11" (
-SET         Date= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2% & duration%duration_filter_1% & duration%duration_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date <= %date_filter_1% & upload_date >= %date_filter_2% & duration%duration_filter_1% & duration%duration_filter_2%"
 ) ELSE (IF "%date_filter%"=="12" (
-SET         Date= --break-match-filters "upload_date == %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
+SET  Date_Filter= --break-match-filters "upload_date == %date_filter_1% & duration%duration_filter_1% & duration%duration_filter_2%"
 )))))))))))))
 :: setting variables for continue menu
 SET Downloaded-Video=1& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET Downloaded-Quick=& GOTO :doYTDL-check
@@ -2694,7 +2716,7 @@ IF DEFINED duration_filter (
 ECHO   %Green-s%›%ColorOff%  Duration:%Duration%
 )
 IF DEFINED date_filter (
-ECHO   %Green-s%›%ColorOff%  Date:%Date%
+ECHO   %Green-s%›%ColorOff%  Date:%Date_Filter%
 )
 IF "%DownloadList%"=="1" (
 ECHO   %Green-n%›%ColorOff%  URLs: %Underline%%List-Path%%ColorOff%
@@ -2717,7 +2739,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  DOWNLOADING...
 ECHO ------------------------------------------------------------------------------------------------------------------------
 REM ECHO.
-%YTdlp-Path%%OutTemplate%%Options%%Network%%GeoRestrict%%Select%%Download%%Sponsorblock%%FileSystem%%Thumbnail%%Verbosity%%WorkArounds%%Format%%Subtitle%%Comments%%Authenticate%%AdobePass%%PreProcess%%PostProcess%%ReplayGain%%Duration%%Date% "%URL%"
+%YTdlp-Path%%OutTemplate%%Options%%Network%%GeoRestrict%%Select%%Download%%Sponsorblock%%FileSystem%%Thumbnail%%Verbosity%%WorkArounds%%Format%%Subtitle%%Comments%%Authenticate%%AdobePass%%PreProcess%%PostProcess%%ReplayGain%%Duration%%Date_Filter% "%URL%"
 IF %appErr% NEQ 0 ECHO. & ECHO   %Red-s%•%ColorOff%  %Red-s%ERROR%ColorOff%: yt-dlp ErrorLevel is %Bold%%appErr%%ColorOff%.
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
