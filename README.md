@@ -15,9 +15,10 @@ Python scripts by [many](https://gist.github.com/tinyapps/df2b6757a142ff93caf9c6
 Text file with sed commands needed to make subtitles more readable.
 
 ## Requirements
--  sed, tr, truncate, head - Linux/Unix utils ported to Windows. [Included](https://github.com/git-for-windows/git) in git for Windows (you may choose PortableGit.7z variant in releases).  
+-  sed, tr, truncate, head - Linux/Unix utils ported to Windows. [Included](https://github.com/git-for-windows/git) in git for Windows (you may choose PortableGit.7z variant in releases).
+-  [moreutils-go](https://github.com/gabe565/moreutils-go) - because of 'ts' linux utility. Used for generating timestamps in standard input/output.
 -  aria2c - to use as external downloader if needed. Choose version from [SourceForge](https://sourceforge.net/projects/aria2.mirror/) to avoid certificate files problem on Windows.  
--  ~~[paste](https://gist.github.com/jpflouret/19da43372e643352a1bf) - to pipe contents of Windows clipboard. Download [here](https://gist.github.com/jpflouret/19da43372e643352a1bf#file-paste-zip).~~  
+-  [paste](https://gist.github.com/jpflouret/19da43372e643352a1bf) - to pipe contents of Windows clipboard. Download [here](https://gist.github.com/jpflouret/19da43372e643352a1bf#file-paste-zip).  
 -  [Python](https://www.python.org/downloads/windows/) - to run .py scripts.  
 -  [FFmpeg](https://github.com/AnimMouse/ffmpeg-stable-autobuild) - to merge video and audio files (and a lot more). A static nonfree build version (not gpl,lgpl).
 
