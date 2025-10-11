@@ -6,7 +6,7 @@ A batch (cmd) file made to simplify the usage of yt-dlp on Windows.
 - Can download a link from clipboard with default preset (change it for your needs).  
 - Offers many built-in presets for Audio and Video (all is optional).  
 
-Not that it's been tested very well... Suggestions for good presets are welcome.
+Not that it's been tested very well...
 
 ## yt-dlp_nest_comments_fork.py and yt-dlp_nest_comments_new.py
 Python scripts by [many](https://gist.github.com/tinyapps/df2b6757a142ff93caf9c63d0ef38b11) authors to prettify downloaded comments and make them readable.
@@ -31,6 +31,7 @@ Fill-in the settings (example).
 - [yt-autosub-srt-fix](https://github.com/jgoguen/srt_fix) - A plugin to fix double lines of YouTube subtitles.
 - [yt-dlp-YTCustomChapters](https://github.com/bashonly/yt-dlp-YTCustomChapters) - Extractor plugin for using custom YouTube chapter lists.
 - [yt-dlp-getpot-jsi](https://github.com/grqz/yt-dlp-getpot-jsi) - A plugin that attempts to generate POT. Provides some more [formats](https://github.com/yt-dlp/yt-dlp/wiki/PO-Token-Guide#current-po-token-enforcement) to choose from.
+- [Yandex.Translate](https://github.com/gnfalex/YT_yt_dlp_plugin) - yt-dlp plugin to download automatic audio translation from Yandex Translate, based on voice-over-translation and vot-cli.
 - [yt-dlp-replaygain](https://github.com/Eboreg/yt-dlp-replaygain) - Postprocessor plugin for audio volume normalization.
   - [rsgain](https://github.com/complexlogic/rsgain)
   - [AACGain](https://www.rarewares.org/aac-encoders.php#aacgain)
@@ -51,6 +52,9 @@ Fill-in the settings (example).
 
 ## Contribute
 Feel free to fork and contribute if you wish.
+Examples of the correct syntax for using 'parallel' in Windows are desirable.
+Examples of how to disable the command history for this script are desirable (so as not to clutter up the Windows command history with letters and numbers '2', '1', 'w', etc.).
+Suggestions for good presets are welcome.
 
 ## Questions
 
