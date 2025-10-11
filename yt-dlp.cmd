@@ -196,7 +196,7 @@ cls
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Blue-s%•%ColorOff%  ENTER SOURCE
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P URL=%BS%  %Green-n%›%ColorOff%  
+SET /P URL=%BS%  %Cyan-n%› %ColorOff% 
 )
 IF NOT DEFINED source POPD & EXIT /B %APP_ERR%
 CALL :getLST-drag %source%
@@ -255,7 +255,7 @@ cls
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Blue-s%•%ColorOff%  ENTER SOURCE URL ^(or enter "q" to quick-download URL from clipboard; "a" for quick-download audio^)
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P URL=%BS%  %Green-n%›%ColorOff%  
+SET /P URL=%BS%  %Cyan-n%› %ColorOff% 
 IF NOT DEFINED URL EXIT /B %APP_ERR%
 IF "!URL!"=="q" (SET URL=!clipboard!& GOTO :doYTDL-quick) ELSE (
 IF "!URL!"=="a" (SET URL=!clipboard!& GOTO :doYTDL-preset-quick) ELSE (GOTO :start))
@@ -264,7 +264,7 @@ cls
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Blue-s%•%ColorOff%  ENTER SOURCE URL
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P URL=%BS%  %Green-n%›%ColorOff%  
+SET /P URL=%BS%  %Cyan-n%› %ColorOff% 
 IF NOT DEFINED URL EXIT /B %APP_ERR%
 GOTO :start)
 
@@ -279,23 +279,23 @@ ECHO   %Cyan-s%3%ColorOff%. Download From List
 ECHO   %Cyan-s%4%ColorOff%. Download Manually
 ECHO   %Cyan-s%5%ColorOff%. Download Subtitles Only
 ECHO   %Cyan-s%6%ColorOff%. Download Comments Only
-ECHO   %Cyan-s%7%ColorOff%. Stream To Player
-ECHO   %Cyan-s%8%ColorOff%. Sections / Chapters Splitter
+ECHO   %Cyan-s%7%ColorOff%. Split Sections/Chapters
+ECHO   %Cyan-s%8%ColorOff%. Stream To Player
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%e%ColorOff%. Enter URL	%Yellow-s%v%ColorOff%. Version Info
 ECHO   %Yellow-s%s%ColorOff%. Settings	%Yellow-s%c%ColorOff%. Extractor Descriptions
 ECHO   %Yellow-s%u%ColorOff%. Update	%Yellow-s%x%ColorOff%. Error Info
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Enter your choice: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Enter your choice: 
 IF "%choice%"=="1" GOTO :select-format-audio
 IF "%choice%"=="2" GOTO :select-format-video
 IF "%choice%"=="3" GOTO :select-download-list
 IF "%choice%"=="4" GOTO :select-format-manual
 IF "%choice%"=="5" GOTO :select-preset-subs
 IF "%choice%"=="6" GOTO :select-preset-comments
-IF "%choice%"=="7" GOTO :select-format-stream
-IF "%choice%"=="8" GOTO :select-preset-sections
+IF "%choice%"=="7" GOTO :select-preset-sections
+IF "%choice%"=="8" GOTO :select-format-stream
 IF "%choice%"=="e" GOTO :getURL-re-enter
 IF "%choice%"=="s" GOTO :settings
 IF "%choice%"=="u" GOTO :update
@@ -328,7 +328,7 @@ cls
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Blue-s%•%ColorOff%  ENTER SOURCE URL
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P URL=%BS%  %Green-n%›%ColorOff%  
+SET /P URL=%BS%  %Cyan-n%› %ColorOff% 
 IF NOT DEFINED URL EXIT /B %APP_ERR%
 IF "%Downloaded-Audio%"=="1" (
 GOTO :continue
@@ -369,7 +369,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Enter your choice: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Enter your choice: 
 IF "%choice%"=="1" GOTO :cookies
 IF "%choice%"=="2" GOTO :aria
 IF "%choice%"=="3" GOTO :plugins
@@ -405,7 +405,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Select preset: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Select preset: 
 IF "%choice%"=="1" SET DownloadList=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=1& GOTO :select-format-audio) ELSE (GOTO :select-format-audio)
 IF "%choice%"=="2" SET DownloadList=1& SET CropThumb=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=1& GOTO :select-format-audio) ELSE (GOTO :select-format-audio)
 IF "%choice%"=="3" SET DownloadList=1& SET CropThumb=1& SET OnlyNew=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=1& GOTO :select-format-audio) ELSE (GOTO :select-format-audio)
@@ -427,23 +427,23 @@ GOTO :select-download-list
 :playlist-error
 cls
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Blue-s%•%ColorOff%  Number of allowed failures until the rest of the playlist is skipped
+ECHO   %Blue-s%•%ColorOff%  Allowed failures for playlists ^(until the rest of the playlist is skipped^)
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%1%ColorOff%. After 1 Error
-ECHO   %Cyan-s%2%ColorOff%. After 2 Errors
-ECHO   %Cyan-s%3%ColorOff%. After 3 Errors
-ECHO   %Cyan-s%4%ColorOff%. After 4 Errors
-ECHO   %Cyan-s%5%ColorOff%. After 5 Errors
-ECHO   %Cyan-s%6%ColorOff%. After 6 Errors
-ECHO   %Cyan-s%7%ColorOff%. After 7 Errors
-ECHO   %Cyan-s%8%ColorOff%. After 8 Errors
+ECHO   %Cyan-s%1%ColorOff%. 1 Error
+ECHO   %Cyan-s%2%ColorOff%. 2 Errors
+ECHO   %Cyan-s%3%ColorOff%. 3 Errors
+ECHO   %Cyan-s%4%ColorOff%. 4 Errors
+ECHO   %Cyan-s%5%ColorOff%. 5 Errors
+ECHO   %Cyan-s%6%ColorOff%. 6 Errors
+ECHO   %Cyan-s%7%ColorOff%. 7 Errors
+ECHO   %Cyan-s%8%ColorOff%. 8 Errors
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Yellow-n%a%ColorOff%. Abort ANY Further Downloading On Error
-ECHO   %Yellow-s%r%ColorOff%. Do NOT Stop On Errors
+ECHO   %Yellow-n%a%ColorOff%. Always Abort On Errors
+ECHO   %Yellow-s%r%ColorOff%. Never Abort On Errors
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Enter your choice: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Enter your choice: 
 IF "%choice%"=="1" SET stop_on_error=1& GOTO :settings
 IF "%choice%"=="2" SET stop_on_error=2& GOTO :settings
 IF "%choice%"=="3" SET stop_on_error=3& GOTO :settings
@@ -473,7 +473,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Use aria2c as external downloader? 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Use aria2c as external downloader? 
 IF "%choice%"=="1" SET usearia=1& GOTO :settings
 IF "%choice%"=="2" SET usearia=& GOTO :settings
 IF "%choice%"=="w" GOTO :settings
@@ -495,7 +495,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Use '%COOKIES_PATH%'? 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Use '%COOKIES_PATH%'? 
 IF "%choice%"=="1" SET usecookies=1& GOTO :settings
 IF "%choice%"=="2" SET usecookies=& GOTO :settings
 IF "%choice%"=="w" GOTO :settings
@@ -520,7 +520,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Select plugin: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Select plugin: 
 IF "%choice%"=="1" GOTO :plugin-1
 IF "%choice%"=="2" GOTO :plugin-2
 IF "%choice%"=="3" GOTO :plugin-3
@@ -545,7 +545,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Enable SRT_fixer plugin? 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Enable SRT_fixer plugin? 
 IF "%choice%"=="1" SET use_pl_srtfixer=1& GOTO :plugins
 IF "%choice%"=="2" SET use_pl_srtfixer=& GOTO :plugins
 IF "%choice%"=="w" GOTO :plugins
@@ -567,7 +567,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Enable ReplayGain plugin? 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Enable ReplayGain plugin? 
 IF "%choice%"=="1" SET use_pl_replaygain=1& GOTO :plugins
 IF "%choice%"=="2" SET use_pl_replaygain=& GOTO :plugins
 IF "%choice%"=="w" GOTO :plugins
@@ -589,7 +589,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Enable CustomChapters plugin? 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Enable CustomChapters plugin? 
 IF "%choice%"=="1" SET use_pl_customchapters=1& GOTO :plugins
 IF "%choice%"=="2" SET use_pl_customchapters=& GOTO :plugins
 IF "%choice%"=="w" GOTO :plugins
@@ -611,7 +611,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Enable ReturnYoutubeDislike plugin? 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Enable ReturnYoutubeDislike plugin? 
 IF "%choice%"=="1" SET use_pl_returnyoutubedislike=1& GOTO :plugins
 IF "%choice%"=="2" SET use_pl_returnyoutubedislike=& GOTO :plugins
 IF "%choice%"=="w" GOTO :plugins
@@ -634,7 +634,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Enable Yandex Translate plugin? 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Enable Yandex Translate plugin? 
 IF "%choice%"=="1" SET use_pl_yandextranslate=1& GOTO :plugins
 IF "%choice%"=="2" SET use_pl_yandextranslate=2& GOTO :plugins
 IF "%choice%"=="3" SET use_pl_yandextranslate=& GOTO :plugins
@@ -713,7 +713,7 @@ ECHO   %Yellow-s%r%ColorOff%. Main Menu
 REM ECHO   %Yellow-s%w%ColorOff%. Set Downloader
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Continue? 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Continue? 
 IF "%choice%"=="1" GOTO :getURL-continue
 IF "%choice%"=="2" (IF "%Downloaded-Audio%"=="1" (
 GOTO :doYTDL
@@ -751,7 +751,7 @@ cls
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Blue-s%•%ColorOff%  ENTER SOURCE URL
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P URL=%BS%  %Green-n%›%ColorOff%  
+SET /P URL=%BS%  %Cyan-n%› %ColorOff% 
 IF NOT DEFINED URL EXIT /B %APP_ERR%
 IF "%Downloaded-Audio%"=="1" (
 GOTO :doYTDL
@@ -808,7 +808,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Cyan-s%1%ColorOff%. Video + Audio		%Yellow-s%w%ColorOff%. Go Back
 ECHO   %Cyan-s%2%ColorOff%. Audio Only / Video Only	%Red-s%q%ColorOff%. Exit
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P choice=%BS%  %Green-n%›%ColorOff% Select Option: 
+SET /P choice=%BS%  %Cyan-n%› %ColorOff% Select Option: 
 IF "%choice%"=="1" GOTO :selection-manual
 IF "%choice%"=="2" GOTO :selection-manual-single
 IF "%choice%"=="w" GOTO :start
@@ -820,8 +820,8 @@ timeout /t 2 >nul
 GOTO :selection
 
 :selection-manual
-SET /P video=%BS%  %Green-n%›%ColorOff% Select Video Format: 
-SET /P audio=%BS%  %Green-n%›%ColorOff% Select Audio Format: 
+SET /P video=%BS%  %Cyan-n%› %ColorOff% Select Video Format: 
+SET /P audio=%BS%  %Cyan-n%› %ColorOff% Select Audio Format: 
 GOTO :download-manual
 
 :download-manual
@@ -839,7 +839,7 @@ PAUSE >nul
 GOTO :continue
 
 :selection-manual-single
-SET /P format=%BS%  %Green-n%›%ColorOff% Select Format: 
+SET /P format=%BS%  %Cyan-n%› %ColorOff% Select Format: 
 GOTO :download-manual-single
 
 :download-manual-single
@@ -899,7 +899,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Select audio format: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Select audio format: 
 IF "%choice%"=="1" SET CustomFormatAudio=1& SET BestAudio=1& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (IF "%DownloadList%"=="1" (GOTO :doYTDL-audio-preset-2) ELSE (GOTO :select-preset-audio)))
 IF "%choice%"=="2" SET CustomFormatAudio=1& SET CustomFormat-opus=1& SET AudioFormat=opus& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (IF "%DownloadList%"=="1" (GOTO :doYTDL-audio-preset-2) ELSE (GOTO :select-preset-audio)))
 IF "%choice%"=="3" SET CustomFormatAudio=1& SET CustomFormat-m4a=1& SET AudioFormat=m4a& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (IF "%DownloadList%"=="1" (GOTO :doYTDL-audio-preset-2) ELSE (GOTO :select-preset-audio)))
@@ -993,7 +993,7 @@ ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Yellow-s%r%ColorOff%. Main Menu
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Select audio quality: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Select audio quality: 
 IF "%choice%"=="1" SET quality_simple=1& SET AudioQuality=1& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (IF "%DownloadList%"=="1" (GOTO :doYTDL-audio-preset-2) ELSE (GOTO :select-preset-audio)))
 IF "%choice%"=="2" SET quality_simple=1& SET AudioQuality=2& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (IF "%DownloadList%"=="1" (GOTO :doYTDL-audio-preset-2) ELSE (GOTO :select-preset-audio)))
 IF "%choice%"=="3" SET quality_simple=1& SET AudioQuality=3& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (IF "%DownloadList%"=="1" (GOTO :doYTDL-audio-preset-2) ELSE (GOTO :select-preset-audio)))
@@ -1032,7 +1032,7 @@ ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Yellow-s%r%ColorOff%. Main Menu
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Select audio quality: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Select audio quality: 
 IF "%choice%"=="1" SET quality_libfdk=1& SET AudioQuality=1& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (IF "%DownloadList%"=="1" (GOTO :doYTDL-audio-preset-2) ELSE (GOTO :select-preset-audio)))
 IF "%choice%"=="2" SET quality_libfdk=1& SET AudioQuality=2& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (IF "%DownloadList%"=="1" (GOTO :doYTDL-audio-preset-2) ELSE (GOTO :select-preset-audio)))
 IF "%choice%"=="3" SET quality_libfdk=1& SET AudioQuality=3& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (IF "%DownloadList%"=="1" (GOTO :doYTDL-audio-preset-2) ELSE (GOTO :select-preset-audio)))
@@ -1076,7 +1076,7 @@ ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Yellow-s%r%ColorOff%. Main Menu
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Select audio quality: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Select audio quality: 
 IF "%choice%"=="1" SET quality_aac_at=1& SET aac-at-param-1=-aac_at_quality 0& SET aac-at-param-2=-q:a& SET aac-at-param-3=0& SET aac-at-param-4=-aac_at_mode& SET aac-at-param-5=vbr& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (IF "%DownloadList%"=="1" (GOTO :doYTDL-audio-preset-2) ELSE (GOTO :select-preset-audio)))
 IF "%choice%"=="2" SET quality_aac_at=1& SET aac-at-param-1=-aac_at_quality 0& SET aac-at-param-2=-q:a& SET aac-at-param-3=1& SET aac-at-param-4=-aac_at_mode& SET aac-at-param-5=vbr& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (IF "%DownloadList%"=="1" (GOTO :doYTDL-audio-preset-2) ELSE (GOTO :select-preset-audio)))
 IF "%choice%"=="3" SET quality_aac_at=1& SET aac-at-param-1=-aac_at_quality 0& SET aac-at-param-2=-q:a& SET aac-at-param-3=2& SET aac-at-param-4=-aac_at_mode& SET aac-at-param-5=vbr& IF "%SectionsAudio%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsAudio%"=="2" (GOTO :doYTDL-audio-preset-1) ELSE (IF "%DownloadList%"=="1" (GOTO :doYTDL-audio-preset-2) ELSE (GOTO :select-preset-audio)))
@@ -1145,7 +1145,7 @@ ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Yellow-s%r%ColorOff%. Main Menu
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Choose preset: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Choose preset: 
 IF "%choice%"=="1" IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=1& GOTO :doYTDL-audio-preset-2) ELSE (GOTO :doYTDL-audio-preset-2)
 IF "%choice%"=="2" SET CropThumb=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=1& GOTO :doYTDL-audio-preset-2) ELSE (GOTO :doYTDL-audio-preset-2)
 IF "%choice%"=="3" SET FormatTitle=1& IF "%use_pl_replaygain%"=="1" (SET ReplayGainPreset=1& GOTO :doYTDL-audio-preset-2) ELSE (GOTO :doYTDL-audio-preset-2)
@@ -1206,7 +1206,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Select video quality: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Select video quality: 
 IF "%choice%"=="1" SET CustomFormatVideo=1& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (IF "%DownloadList%"=="1" (GOTO :doYTDL-video-preset-2) ELSE (GOTO :select-preset-video)))
 IF "%choice%"=="2" SET VideoResolution=1440& SET VideoFPS=60& GOTO :select-codec-video
 IF "%choice%"=="3" SET VideoResolution=1440& SET VideoFPS=30& GOTO :select-codec-video
@@ -1243,7 +1243,7 @@ ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Yellow-s%r%ColorOff%. Main Menu
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Select a codec: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Select a codec: 
 IF "%choice%"=="1" SET CustomCodec=any& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (IF "%DownloadList%"=="1" (GOTO :doYTDL-video-preset-2) ELSE (GOTO :select-preset-video)))
 IF "%choice%"=="2" SET CustomCodec=avc& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (IF "%DownloadList%"=="1" (GOTO :doYTDL-video-preset-2) ELSE (GOTO :select-preset-video)))
 IF "%choice%"=="3" SET CustomCodec=vp9& IF "%SectionsVideo%"=="1" (GOTO :select-sections-number) ELSE (IF "%SectionsVideo%"=="2" (GOTO :doYTDL-video-preset-1) ELSE (IF "%DownloadList%"=="1" (GOTO :doYTDL-video-preset-2) ELSE (GOTO :select-preset-video)))
@@ -1262,41 +1262,39 @@ cls
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Blue-s%•%ColorOff%  VIDEO PRESETS
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%1%ColorOff%. Video Single / Channel				 %Cyan-s%5%ColorOff%. Video Single + Only New
-ECHO   %Cyan-s%2%ColorOff%. Video Single + Top Comments			 %Cyan-s%6%ColorOff%. Video Single + Top Comments + Only New
+ECHO   %Cyan-s%1%ColorOff%. Video Single / Channel				 %Cyan-s%9%ColorOff%. Video Single + Only New
+ECHO   %Cyan-s%2%ColorOff%. Video Single + Top Comments			%Cyan-s%10%ColorOff%. Video Single + Top Comments + Only New
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Cyan-s%3%ColorOff%. Video Playlist					 %Cyan-s%7%ColorOff%. Video Playlist + Only New
-ECHO   %Cyan-s%4%ColorOff%. Video Playlist + Top Comments			 %Cyan-s%8%ColorOff%. Video Playlist + Top Comments + Only New
+ECHO   %Cyan-s%3%ColorOff%. Video Album / Release				%Cyan-s%11%ColorOff%. Video Album + Only New
+ECHO   %Cyan-s%4%ColorOff%. Video Album + Top Comments				%Cyan-s%12%ColorOff%. Video Album + Top Comments + Only New
 ECHO ------------------------------------------------------------------------------------------------------------------------
-IF DEFINED use_pl_yandextranslate (
-ECHO   %Cyan-s%9%ColorOff%. Video + Yandex Translation				 %Cyan-s%13%ColorOff%. Video Single + Yandex Translation + Only New
-ECHO  %Cyan-s%10%ColorOff%. Video + Yandex Translation + Top Comments		 %Cyan-s%14%ColorOff%. Video Single + Yandex Translation + Comments + Only New
+ECHO   %Cyan-s%5%ColorOff%. Video Playlist					%Cyan-s%13%ColorOff%. Video Playlist + Only New
+ECHO   %Cyan-s%6%ColorOff%. Video Playlist + Top Comments			%Cyan-s%14%ColorOff%. Video Playlist + Top Comments + Only New
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO  %Cyan-s%11%ColorOff%. Video Playlist + Yandex Translation		 %Cyan-s%15%ColorOff%. Video Playlist + Yandex Translation + Only New
-ECHO  %Cyan-s%12%ColorOff%. Video Playlist + Yandex Translation + Top Comments	 %Cyan-s%16%ColorOff%. Video Playlist + Yandex Translation + Comments + Only New
+ECHO   %Cyan-s%7%ColorOff%. Video Playlist / Various Artists			%Cyan-s%15%ColorOff%. Video Playlist / Various Artists + Only New
+ECHO   %Cyan-s%8%ColorOff%. Video Playlist / Various Artists + Top Comments	%Cyan-s%16%ColorOff%. Video Playlist / Various Artists + Top Comments + Only New
 ECHO ------------------------------------------------------------------------------------------------------------------------
-)
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Yellow-s%r%ColorOff%. Main Menu
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Choose preset: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Choose preset: 
 IF "%choice%"=="1" GOTO :doYTDL-video-preset-2
 IF "%choice%"=="2" SET CommentPreset=1& GOTO :doYTDL-video-preset-2
-IF "%choice%"=="3" GOTO :doYTDL-video-preset-3
-IF "%choice%"=="4" SET CommentPreset=1& GOTO :doYTDL-video-preset-3
-IF "%choice%"=="5" SET OnlyNew=1& GOTO :doYTDL-video-preset-2
-IF "%choice%"=="6" SET CommentPreset=1& SET OnlyNew=1& GOTO :doYTDL-video-preset-2
-IF "%choice%"=="7" SET OnlyNew=1& GOTO :doYTDL-video-preset-3
-IF "%choice%"=="8" SET CommentPreset=1& SET OnlyNew=1& GOTO :doYTDL-video-preset-3
-IF "%choice%"=="9" GOTO :doYTDL-video-preset-2
-IF "%choice%"=="10" SET CommentPreset=1& GOTO :doYTDL-video-preset-2
-IF "%choice%"=="11" GOTO :doYTDL-video-preset-3
-IF "%choice%"=="12" SET CommentPreset=1& GOTO :doYTDL-video-preset-3
-IF "%choice%"=="13" SET OnlyNew=1& GOTO :doYTDL-video-preset-2
-IF "%choice%"=="14" SET CommentPreset=1& SET OnlyNew=1& GOTO :doYTDL-video-preset-2
-IF "%choice%"=="15" SET OnlyNew=1& GOTO :doYTDL-video-preset-3
-IF "%choice%"=="16" SET CommentPreset=1& SET OnlyNew=1& GOTO :doYTDL-video-preset-3
+IF "%choice%"=="3" SET Album=1& GOTO :doYTDL-video-preset-3
+IF "%choice%"=="4" SET Album=1& SET CommentPreset=1& GOTO :doYTDL-video-preset-3
+IF "%choice%"=="5" GOTO :doYTDL-video-preset-3
+IF "%choice%"=="6" SET CommentPreset=1& GOTO :doYTDL-video-preset-3
+IF "%choice%"=="7" SET VariousArtists=1& GOTO :doYTDL-video-preset-3
+IF "%choice%"=="8" SET VariousArtists=1& SET CommentPreset=1& GOTO :doYTDL-video-preset-3
+IF "%choice%"=="9" SET OnlyNew=1& GOTO :doYTDL-video-preset-2
+IF "%choice%"=="10" SET CommentPreset=1& SET OnlyNew=1& GOTO :doYTDL-video-preset-2
+IF "%choice%"=="11" SET Album=1& SET OnlyNew=1& GOTO :doYTDL-video-preset-3
+IF "%choice%"=="12" SET Album=1& SET CommentPreset=1& SET OnlyNew=1& GOTO :doYTDL-video-preset-3
+IF "%choice%"=="13" SET OnlyNew=1& GOTO :doYTDL-video-preset-3
+IF "%choice%"=="14" SET CommentPreset=1& SET OnlyNew=1& GOTO :doYTDL-video-preset-3
+IF "%choice%"=="15" SET VariousArtists=1& SET OnlyNew=1& GOTO :doYTDL-video-preset-3
+IF "%choice%"=="16" SET VariousArtists=1& SET CommentPreset=1& SET OnlyNew=1& GOTO :doYTDL-video-preset-3
 IF "%choice%"=="w" GOTO :select-codec-video
 IF "%choice%"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET BestAudio=& SET aac-at-param-1=& SET aac-at-param-2=& SET aac-at-param-3=& SET aac-at-param-4=& SET aac-at-param-5=& SET CustomCodec=& SET ALBUM=& GOTO :start
 IF "%choice%"=="q" GOTO :exit
@@ -1327,7 +1325,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Choose option: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Choose option: 
 IF "%choice%"=="1" SET SubsPreset=1& GOTO :subs-preset-1
 IF "%choice%"=="2" SET SubsPreset=2& GOTO :subs-preset-1
 IF "%choice%"=="3" SET SubsPreset=3& GOTO :subs-preset-1
@@ -1367,7 +1365,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Choose option: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Choose option: 
 IF "%choice%"=="1" SET CommentPreset=1& GOTO :comments-preset-1
 IF "%choice%"=="2" SET CommentPreset=2& GOTO :comments-preset-1
 IF "%choice%"=="3" SET CommentPreset=3& GOTO :comments-preset-1
@@ -1407,7 +1405,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Choose option: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Choose option: 
 IF "%choice%"=="1" GOTO :select-quality-audio-stream
 IF "%choice%"=="2" GOTO :select-quality-video-stream
 IF "%choice%"=="w" GOTO :start
@@ -1430,7 +1428,7 @@ ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Yellow-s%r%ColorOff%. Main Menu
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Enter your choice: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Enter your choice: 
 IF "%choice%"=="1" SET StreamVideoFormat=& SET StreamAudioFormat=1& GOTO :doYTDL-preset-stream-1
 IF "%choice%"=="2" SET StreamVideoFormat=& SET StreamAudioFormat=2& GOTO :doYTDL-preset-stream-1
 IF "%choice%"=="w" GOTO :select-format-stream
@@ -1466,7 +1464,7 @@ ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Yellow-s%r%ColorOff%. Main Menu
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Enter your choice: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Enter your choice: 
 IF "%choice%"=="1" SET StreamAudioFormat=& SET StreamVideoFormat=1& GOTO :doYTDL-preset-stream-1
 IF "%choice%"=="2" SET StreamAudioFormat=& SET VideoResolution=1440& SET VideoFPS=60& GOTO :select-codec-video-stream
 IF "%choice%"=="3" SET StreamAudioFormat=& SET VideoResolution=1440& SET VideoFPS=30& GOTO :select-codec-video-stream
@@ -1504,7 +1502,7 @@ ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Yellow-s%r%ColorOff%. Main Menu
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Select a codec: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Select a codec: 
 IF "%choice%"=="1" SET StreamVideoFormat=4& GOTO :doYTDL-preset-stream-1
 IF "%choice%"=="2" SET StreamVideoFormat=5& GOTO :doYTDL-preset-stream-1
 IF "%choice%"=="3" SET StreamVideoFormat=6& GOTO :doYTDL-preset-stream-1
@@ -1544,7 +1542,7 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Select preset: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Select preset: 
 IF "%choice%"=="1" SET SectionsAudio=1& GOTO :select-format-audio
 IF "%choice%"=="2" SET SectionsVideo=1& GOTO :select-format-video
 IF "%choice%"=="3" SET SectionsAudio=2& GOTO :select-format-audio
@@ -1585,7 +1583,7 @@ ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Yellow-s%r%ColorOff%. Main Menu
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Enter your choice: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Enter your choice: 
 IF "%choice%"=="1" SET DoSections=1& GOTO :enter-sections-1
 IF "%choice%"=="2" SET DoSections=2& GOTO :enter-sections-2
 IF "%choice%"=="3" SET DoSections=3& GOTO :enter-sections-3
@@ -1606,115 +1604,115 @@ timeout /t 2 >nul
 GOTO :select-sections-number
 
 :enter-sections-1
-SET /P section1=%BS%  %Green-n%›%ColorOff% Enter section time (i.e. 21:00-22:00): 
+SET /P section1=%BS%  %Cyan-n%› %ColorOff% Enter section time (i.e. 21:00-22:00): 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 1 >nul
 GOTO :sections-preset-1
 :enter-sections-2
-SET /P section1=%BS%  %Green-n%›%ColorOff% Enter section time (i.e. 21:00-22:00): 
-SET /P section2=%BS%  %Green-n%›%ColorOff% Enter section 2 time: 
+SET /P section1=%BS%  %Cyan-n%› %ColorOff% Enter section time (i.e. 21:00-22:00): 
+SET /P section2=%BS%  %Cyan-n%› %ColorOff% Enter section 2 time: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 1 >nul
 GOTO :sections-preset-1
 :enter-sections-3
-SET /P section1=%BS%  %Green-n%›%ColorOff% Enter section time (i.e. 21:00-22:00): 
-SET /P section2=%BS%  %Green-n%›%ColorOff% Enter section 2 time: 
-SET /P section3=%BS%  %Green-n%›%ColorOff% Enter section 3 time: 
+SET /P section1=%BS%  %Cyan-n%› %ColorOff% Enter section time (i.e. 21:00-22:00): 
+SET /P section2=%BS%  %Cyan-n%› %ColorOff% Enter section 2 time: 
+SET /P section3=%BS%  %Cyan-n%› %ColorOff% Enter section 3 time: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 1 >nul
 GOTO :sections-preset-1
 :enter-sections-4
-SET /P section1=%BS%  %Green-n%›%ColorOff% Enter section time (i.e. 21:00-22:00): 
-SET /P section2=%BS%  %Green-n%›%ColorOff% Enter section 2 time: 
-SET /P section3=%BS%  %Green-n%›%ColorOff% Enter section 3 time: 
-SET /P section4=%BS%  %Green-n%›%ColorOff% Enter section 4 time: 
+SET /P section1=%BS%  %Cyan-n%› %ColorOff% Enter section time (i.e. 21:00-22:00): 
+SET /P section2=%BS%  %Cyan-n%› %ColorOff% Enter section 2 time: 
+SET /P section3=%BS%  %Cyan-n%› %ColorOff% Enter section 3 time: 
+SET /P section4=%BS%  %Cyan-n%› %ColorOff% Enter section 4 time: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 1 >nul
 GOTO :sections-preset-1
 :enter-sections-5
-SET /P section1=%BS%  %Green-n%›%ColorOff% Enter section time (i.e. 21:00-22:00): 
-SET /P section2=%BS%  %Green-n%›%ColorOff% Enter section 2 time: 
-SET /P section3=%BS%  %Green-n%›%ColorOff% Enter section 3 time: 
-SET /P section4=%BS%  %Green-n%›%ColorOff% Enter section 4 time: 
-SET /P section5=%BS%  %Green-n%›%ColorOff% Enter section 5 time: 
+SET /P section1=%BS%  %Cyan-n%› %ColorOff% Enter section time (i.e. 21:00-22:00): 
+SET /P section2=%BS%  %Cyan-n%› %ColorOff% Enter section 2 time: 
+SET /P section3=%BS%  %Cyan-n%› %ColorOff% Enter section 3 time: 
+SET /P section4=%BS%  %Cyan-n%› %ColorOff% Enter section 4 time: 
+SET /P section5=%BS%  %Cyan-n%› %ColorOff% Enter section 5 time: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 1 >nul
 GOTO :sections-preset-1
 :enter-sections-6
-SET /P section1=%BS%  %Green-n%›%ColorOff% Enter section time (i.e. 21:00-22:00): 
-SET /P section2=%BS%  %Green-n%›%ColorOff% Enter section 2 time: 
-SET /P section3=%BS%  %Green-n%›%ColorOff% Enter section 3 time: 
-SET /P section4=%BS%  %Green-n%›%ColorOff% Enter section 4 time: 
-SET /P section5=%BS%  %Green-n%›%ColorOff% Enter section 5 time: 
-SET /P section6=%BS%  %Green-n%›%ColorOff% Enter section 6 time: 
+SET /P section1=%BS%  %Cyan-n%› %ColorOff% Enter section time (i.e. 21:00-22:00): 
+SET /P section2=%BS%  %Cyan-n%› %ColorOff% Enter section 2 time: 
+SET /P section3=%BS%  %Cyan-n%› %ColorOff% Enter section 3 time: 
+SET /P section4=%BS%  %Cyan-n%› %ColorOff% Enter section 4 time: 
+SET /P section5=%BS%  %Cyan-n%› %ColorOff% Enter section 5 time: 
+SET /P section6=%BS%  %Cyan-n%› %ColorOff% Enter section 6 time: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 1 >nul
 GOTO :sections-preset-1
 :enter-sections-7
-SET /P section1=%BS%  %Green-n%›%ColorOff% Enter section time (i.e. 21:00-22:00): 
-SET /P section2=%BS%  %Green-n%›%ColorOff% Enter section 2 time: 
-SET /P section3=%BS%  %Green-n%›%ColorOff% Enter section 3 time: 
-SET /P section4=%BS%  %Green-n%›%ColorOff% Enter section 4 time: 
-SET /P section5=%BS%  %Green-n%›%ColorOff% Enter section 5 time: 
-SET /P section6=%BS%  %Green-n%›%ColorOff% Enter section 6 time: 
-SET /P section7=%BS%  %Green-n%›%ColorOff% Enter section 7 time: 
+SET /P section1=%BS%  %Cyan-n%› %ColorOff% Enter section time (i.e. 21:00-22:00): 
+SET /P section2=%BS%  %Cyan-n%› %ColorOff% Enter section 2 time: 
+SET /P section3=%BS%  %Cyan-n%› %ColorOff% Enter section 3 time: 
+SET /P section4=%BS%  %Cyan-n%› %ColorOff% Enter section 4 time: 
+SET /P section5=%BS%  %Cyan-n%› %ColorOff% Enter section 5 time: 
+SET /P section6=%BS%  %Cyan-n%› %ColorOff% Enter section 6 time: 
+SET /P section7=%BS%  %Cyan-n%› %ColorOff% Enter section 7 time: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 1 >nul
 GOTO :sections-preset-1
 :enter-sections-8
-SET /P section1=%BS%  %Green-n%›%ColorOff% Enter section time (i.e. 21:00-22:00): 
-SET /P section2=%BS%  %Green-n%›%ColorOff% Enter section 2 time: 
-SET /P section3=%BS%  %Green-n%›%ColorOff% Enter section 3 time: 
-SET /P section4=%BS%  %Green-n%›%ColorOff% Enter section 4 time: 
-SET /P section5=%BS%  %Green-n%›%ColorOff% Enter section 5 time: 
-SET /P section6=%BS%  %Green-n%›%ColorOff% Enter section 6 time: 
-SET /P section7=%BS%  %Green-n%›%ColorOff% Enter section 7 time: 
-SET /P section8=%BS%  %Green-n%›%ColorOff% Enter section 8 time: 
+SET /P section1=%BS%  %Cyan-n%› %ColorOff% Enter section time (i.e. 21:00-22:00): 
+SET /P section2=%BS%  %Cyan-n%› %ColorOff% Enter section 2 time: 
+SET /P section3=%BS%  %Cyan-n%› %ColorOff% Enter section 3 time: 
+SET /P section4=%BS%  %Cyan-n%› %ColorOff% Enter section 4 time: 
+SET /P section5=%BS%  %Cyan-n%› %ColorOff% Enter section 5 time: 
+SET /P section6=%BS%  %Cyan-n%› %ColorOff% Enter section 6 time: 
+SET /P section7=%BS%  %Cyan-n%› %ColorOff% Enter section 7 time: 
+SET /P section8=%BS%  %Cyan-n%› %ColorOff% Enter section 8 time: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 1 >nul
 GOTO :sections-preset-1
 :enter-sections-9
-SET /P section1=%BS%  %Green-n%›%ColorOff% Enter section time (i.e. 21:00-22:00): 
-SET /P section2=%BS%  %Green-n%›%ColorOff% Enter section 2 time: 
-SET /P section3=%BS%  %Green-n%›%ColorOff% Enter section 3 time: 
-SET /P section4=%BS%  %Green-n%›%ColorOff% Enter section 4 time: 
-SET /P section5=%BS%  %Green-n%›%ColorOff% Enter section 5 time: 
-SET /P section6=%BS%  %Green-n%›%ColorOff% Enter section 6 time: 
-SET /P section7=%BS%  %Green-n%›%ColorOff% Enter section 7 time: 
-SET /P section8=%BS%  %Green-n%›%ColorOff% Enter section 8 time: 
-SET /P section9=%BS%  %Green-n%›%ColorOff% Enter section 9 time: 
+SET /P section1=%BS%  %Cyan-n%› %ColorOff% Enter section time (i.e. 21:00-22:00): 
+SET /P section2=%BS%  %Cyan-n%› %ColorOff% Enter section 2 time: 
+SET /P section3=%BS%  %Cyan-n%› %ColorOff% Enter section 3 time: 
+SET /P section4=%BS%  %Cyan-n%› %ColorOff% Enter section 4 time: 
+SET /P section5=%BS%  %Cyan-n%› %ColorOff% Enter section 5 time: 
+SET /P section6=%BS%  %Cyan-n%› %ColorOff% Enter section 6 time: 
+SET /P section7=%BS%  %Cyan-n%› %ColorOff% Enter section 7 time: 
+SET /P section8=%BS%  %Cyan-n%› %ColorOff% Enter section 8 time: 
+SET /P section9=%BS%  %Cyan-n%› %ColorOff% Enter section 9 time: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 1 >nul
 GOTO :sections-preset-1
 :enter-sections-10
-SET /P section1=%BS%  %Green-n%›%ColorOff% Enter section time (i.e. 21:00-22:00): 
-SET /P section2=%BS%  %Green-n%›%ColorOff% Enter section 2 time: 
-SET /P section3=%BS%  %Green-n%›%ColorOff% Enter section 3 time: 
-SET /P section4=%BS%  %Green-n%›%ColorOff% Enter section 4 time: 
-SET /P section5=%BS%  %Green-n%›%ColorOff% Enter section 5 time: 
-SET /P section6=%BS%  %Green-n%›%ColorOff% Enter section 6 time: 
-SET /P section7=%BS%  %Green-n%›%ColorOff% Enter section 7 time: 
-SET /P section8=%BS%  %Green-n%›%ColorOff% Enter section 8 time: 
-SET /P section9=%BS%  %Green-n%›%ColorOff% Enter section 9 time: 
-SET /P section10=%BS%  %Green-n%›%ColorOff% Enter section 10 time: 
+SET /P section1=%BS%  %Cyan-n%› %ColorOff% Enter section time (i.e. 21:00-22:00): 
+SET /P section2=%BS%  %Cyan-n%› %ColorOff% Enter section 2 time: 
+SET /P section3=%BS%  %Cyan-n%› %ColorOff% Enter section 3 time: 
+SET /P section4=%BS%  %Cyan-n%› %ColorOff% Enter section 4 time: 
+SET /P section5=%BS%  %Cyan-n%› %ColorOff% Enter section 5 time: 
+SET /P section6=%BS%  %Cyan-n%› %ColorOff% Enter section 6 time: 
+SET /P section7=%BS%  %Cyan-n%› %ColorOff% Enter section 7 time: 
+SET /P section8=%BS%  %Cyan-n%› %ColorOff% Enter section 8 time: 
+SET /P section9=%BS%  %Cyan-n%› %ColorOff% Enter section 9 time: 
+SET /P section10=%BS%  %Cyan-n%› %ColorOff% Enter section 10 time: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -1755,7 +1753,7 @@ ECHO   %Yellow-n%r%ColorOff%. Disable Duration Filter
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Select duration dilter preset: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Select duration dilter preset: 
 IF "%choice%"=="1" SET duration_filter=1& GOTO :duration-filter-1
 IF "%choice%"=="2" SET duration_filter=2& GOTO :duration-filter-2
 IF "%choice%"=="3" SET duration_filter=3& GOTO :duration-filter-3
@@ -1784,7 +1782,7 @@ GOTO :set-duration-filter
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  i.e. ^>60 ^(longer than 60sec^), ^<60 ^(under 60sec^), ^<=600 ^(under or equal 10mins^), ==150 ^(equal 150sec^)
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P duration_filter_1=%BS%  %Green-n%›%ColorOff% Set filter #1: 
+SET /P duration_filter_1=%BS%  %Cyan-n%› %ColorOff% Set filter #1: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -1795,8 +1793,8 @@ GOTO :settings
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  i.e. ^>60 ^(longer than 60sec^), ^<60 ^(under 60sec^), ^<=600 ^(under or equal 10mins^), ==150 ^(equal 150sec^)
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P duration_filter_1=%BS%  %Green-n%›%ColorOff% Set filter #1: 
-SET /P duration_filter_2=%BS%  %Green-n%›%ColorOff% Set filter #2: 
+SET /P duration_filter_1=%BS%  %Cyan-n%› %ColorOff% Set filter #1: 
+SET /P duration_filter_2=%BS%  %Cyan-n%› %ColorOff% Set filter #2: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -1807,9 +1805,9 @@ GOTO :settings
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  i.e. ^>60 ^(longer than 60sec^), ^<60 ^(under 60sec^), ^<=600 ^(under or equal 10mins^), ==150 ^(equal 150sec^)
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P duration_filter_1=%BS%  %Green-n%›%ColorOff% Set filter #1: 
-SET /P duration_filter_2=%BS%  %Green-n%›%ColorOff% Set filter #2: 
-SET /P duration_filter_3=%BS%  %Green-n%›%ColorOff% Set filter #3: 
+SET /P duration_filter_1=%BS%  %Cyan-n%› %ColorOff% Set filter #1: 
+SET /P duration_filter_2=%BS%  %Cyan-n%› %ColorOff% Set filter #2: 
+SET /P duration_filter_3=%BS%  %Cyan-n%› %ColorOff% Set filter #3: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -1820,10 +1818,10 @@ GOTO :settings
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  i.e. ^>60 ^(longer than 60sec^), ^<60 ^(under 60sec^), ^<=600 ^(under or equal 10mins^), ==150 ^(equal 150sec^)
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P duration_filter_1=%BS%  %Green-n%›%ColorOff% Set filter #1: 
-SET /P duration_filter_2=%BS%  %Green-n%›%ColorOff% Set filter #2: 
-SET /P duration_filter_3=%BS%  %Green-n%›%ColorOff% Set filter #3: 
-SET /P duration_filter_4=%BS%  %Green-n%›%ColorOff% Set filter #4: 
+SET /P duration_filter_1=%BS%  %Cyan-n%› %ColorOff% Set filter #1: 
+SET /P duration_filter_2=%BS%  %Cyan-n%› %ColorOff% Set filter #2: 
+SET /P duration_filter_3=%BS%  %Cyan-n%› %ColorOff% Set filter #3: 
+SET /P duration_filter_4=%BS%  %Cyan-n%› %ColorOff% Set filter #4: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -1860,7 +1858,7 @@ ECHO   %Yellow-n%r%ColorOff%. Disable Date Filter
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Select date filter preset: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Select date filter preset: 
 IF "%choice%"=="1" SET date-filter=1& GOTO :date-filter-1
 IF "%choice%"=="2" SET date-filter=2& GOTO :date-filter-1
 IF "%choice%"=="3" SET date-filter=3& GOTO :date-filter-2
@@ -1886,7 +1884,7 @@ timeout /t 2 >nul
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  Date in YYYYMMDD format OR relative period ^(now^|today^|yesterday^)[+-][0-9]^(day^|week^|month^|year^), i.e. today-6month
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P date_filter_1=%BS%  %Green-n%›%ColorOff% Set date filter: 
+SET /P date_filter_1=%BS%  %Cyan-n%› %ColorOff% Set date filter: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -1896,8 +1894,8 @@ GOTO :settings
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  Date in YYYYMMDD format OR relative period ^(now^|today^|yesterday^)[+-][0-9]^(day^|week^|month^|year^), i.e. today-6month
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P date_filter_1=%BS%  %Green-n%›%ColorOff% Set BEFORE date filter: 
-SET /P date_filter_2=%BS%  %Green-n%›%ColorOff% Set AFTER date filter: 
+SET /P date_filter_1=%BS%  %Cyan-n%› %ColorOff% Set BEFORE date filter: 
+SET /P date_filter_2=%BS%  %Cyan-n%› %ColorOff% Set AFTER date filter: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -1907,11 +1905,11 @@ GOTO :settings
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  Date in YYYYMMDD format OR relative period ^(now^|today^|yesterday^)[+-][0-9]^(day^|week^|month^|year^), i.e. today-6month
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P date_filter_1=%BS%  %Green-n%›%ColorOff% Set date filter: 
+SET /P date_filter_1=%BS%  %Cyan-n%› %ColorOff% Set date filter: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  i.e. ^>60 ^(longer than 60sec^), ^<60 ^(under 60sec^), ^<=600 ^(under or equal 10mins^), ==150 ^(equal 150sec^)
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P duration_filter_1=%BS%  %Green-n%›%ColorOff% Set duration filter: 
+SET /P duration_filter_1=%BS%  %Cyan-n%› %ColorOff% Set duration filter: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -1921,12 +1919,12 @@ GOTO :settings
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  Date in YYYYMMDD format OR relative period ^(now^|today^|yesterday^)[+-][0-9]^(day^|week^|month^|year^), i.e. today-6month
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P date_filter_1=%BS%  %Green-n%›%ColorOff% Set BEFORE date filter: 
-SET /P date_filter_2=%BS%  %Green-n%›%ColorOff% Set AFTER date filter: 
+SET /P date_filter_1=%BS%  %Cyan-n%› %ColorOff% Set BEFORE date filter: 
+SET /P date_filter_2=%BS%  %Cyan-n%› %ColorOff% Set AFTER date filter: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  i.e. ^>60 ^(longer than 60sec^), ^<60 ^(under 60sec^), ^<=600 ^(under or equal 10mins^), ==150 ^(equal 150sec^)
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P duration_filter_1=%BS%  %Green-n%›%ColorOff% Set duration filter: 
+SET /P duration_filter_1=%BS%  %Cyan-n%› %ColorOff% Set duration filter: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -1936,12 +1934,12 @@ GOTO :settings
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  Date in YYYYMMDD format OR relative period ^(now^|today^|yesterday^)[+-][0-9]^(day^|week^|month^|year^), i.e. today-6month
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P date_filter_1=%BS%  %Green-n%›%ColorOff% Set date filter: 
+SET /P date_filter_1=%BS%  %Cyan-n%› %ColorOff% Set date filter: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  i.e. ^>60 ^(longer than 60sec^), ^<60 ^(under 60sec^), ^<=600 ^(under or equal 10mins^), ==150 ^(equal 150sec^)
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P duration_filter_1=%BS%  %Green-n%›%ColorOff% Set duration filter #1: 
-SET /P duration_filter_2=%BS%  %Green-n%›%ColorOff% Set duration filter #2: 
+SET /P duration_filter_1=%BS%  %Cyan-n%› %ColorOff% Set duration filter #1: 
+SET /P duration_filter_2=%BS%  %Cyan-n%› %ColorOff% Set duration filter #2: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -1951,13 +1949,13 @@ GOTO :settings
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  Date in YYYYMMDD format OR relative period ^(now^|today^|yesterday^)[+-][0-9]^(day^|week^|month^|year^), i.e. today-6month
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P date_filter_1=%BS%  %Green-n%›%ColorOff% Set BEFORE date filter: 
-SET /P date_filter_2=%BS%  %Green-n%›%ColorOff% Set AFTER date filter: 
+SET /P date_filter_1=%BS%  %Cyan-n%› %ColorOff% Set BEFORE date filter: 
+SET /P date_filter_2=%BS%  %Cyan-n%› %ColorOff% Set AFTER date filter: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  i.e. ^>60 ^(longer than 60sec^), ^<60 ^(under 60sec^), ^<=600 ^(under or equal 10mins^), ==150 ^(equal 150sec^)
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P duration_filter_1=%BS%  %Green-n%›%ColorOff% Set duration filter #1: 
-SET /P duration_filter_2=%BS%  %Green-n%›%ColorOff% Set duration filter #2: 
+SET /P duration_filter_1=%BS%  %Cyan-n%› %ColorOff% Set duration filter #1: 
+SET /P duration_filter_2=%BS%  %Cyan-n%› %ColorOff% Set duration filter #2: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -1984,7 +1982,7 @@ ECHO   %Yellow-n%r%ColorOff%. Disable Proxies
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Enter your choice: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Enter your choice: 
 IF "%choice%"=="1" SET proxy=1& SET proxy-option=1& GOTO :proxy-1
 IF "%choice%"=="2" SET proxy=1& SET proxy-option=2& GOTO :proxy-2
 IF "%choice%"=="3" SET proxy=1& SET proxy-option=3& GOTO :proxy-1
@@ -2002,7 +2000,7 @@ GOTO :proxy
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  i.e. proxy-ip:port, localhost:9150
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P proxy_adress=%BS%  %Green-n%›%ColorOff% Enter proxy IP:PORT: 
+SET /P proxy_adress=%BS%  %Cyan-n%› %ColorOff% Enter proxy IP:PORT: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -2013,9 +2011,9 @@ GOTO :settings
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  i.e. proxy-ip:port, localhost:9150 and include your credentials
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P proxy_adress=%BS%  %Green-n%›%ColorOff% Enter proxy IP:PORT: 
-SET /P proxy_username=%BS%  %Green-n%›%ColorOff% Enter your Username: 
-SET /P proxy_password=%BS%  %Green-n%›%ColorOff% Enter your Password: 
+SET /P proxy_adress=%BS%  %Cyan-n%› %ColorOff% Enter proxy IP:PORT: 
+SET /P proxy_username=%BS%  %Cyan-n%› %ColorOff% Enter your Username: 
+SET /P proxy_password=%BS%  %Cyan-n%› %ColorOff% Enter your Password: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -2046,7 +2044,7 @@ ECHO   %Yellow-n%r%ColorOff%. Never Use Bypass
 ECHO   %Yellow-s%w%ColorOff%. Go Back
 ECHO   %Red-s%q%ColorOff%. Exit
 ECHO.
-SET /p choice=%BS%  %Green-n%›%ColorOff% Enter your choice: 
+SET /p choice=%BS%  %Cyan-n%› %ColorOff% Enter your choice: 
 IF "%choice%"=="1" SET geo-bypass=default& SET geo-option=1& GOTO :settings
 IF "%choice%"=="2" SET geo-bypass=1& SET geo-option=2& GOTO :geo-bypass-code
 IF "%choice%"=="3" SET geo-bypass=1& SET geo-option=3& GOTO :geo-bypass-cidr
@@ -2067,7 +2065,7 @@ GOTO :geo-bypass
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  Specific two-letter ISO 3166-2 country code, i.e. NL for Netherlands
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P geo_iso_code=%BS%  %Green-n%›%ColorOff% Enter ISO Code: 
+SET /P geo_iso_code=%BS%  %Cyan-n%› %ColorOff% Enter ISO Code: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -2078,7 +2076,7 @@ GOTO :settings
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  An IP block in CIDR notation, i.e. 5.104.136.0/21
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P geo_cidr=%BS%  %Green-n%›%ColorOff% Enter CIDR IP notation: 
+SET /P geo_cidr=%BS%  %Cyan-n%› %ColorOff% Enter CIDR IP notation: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -2089,7 +2087,7 @@ GOTO :settings
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  i.e. proxy-ip:port, localhost:9150
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P geo_proxy_adress=%BS%  %Green-n%›%ColorOff% Enter proxy IP:PORT: 
+SET /P geo_proxy_adress=%BS%  %Cyan-n%› %ColorOff% Enter proxy IP:PORT: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -2100,9 +2098,9 @@ GOTO :settings
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  i.e. proxy-ip:port, localhost:9150 and include your credentials
 ECHO ------------------------------------------------------------------------------------------------------------------------
-SET /P geo_proxy_adress=%BS%  %Green-n%›%ColorOff% Enter proxy IP:PORT: 
-SET /P geo_proxy_username=%BS%  %Green-n%›%ColorOff% Enter your Username: 
-SET /P geo_proxy_password=%BS%  %Green-n%›%ColorOff% Enter your Password: 
+SET /P geo_proxy_adress=%BS%  %Cyan-n%› %ColorOff% Enter proxy IP:PORT: 
+SET /P geo_proxy_username=%BS%  %Cyan-n%› %ColorOff% Enter your Username: 
+SET /P geo_proxy_password=%BS%  %Cyan-n%› %ColorOff% Enter your Password: 
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -2189,7 +2187,7 @@ SET Sponsorblock= --no-sponsorblock
 SET   FileSystem= --cache-dir "%YTDLP_CACHE_DIR%" --no-mtime --ffmpeg-location "%FFMPEG_PATH%"
 :: --embed-thumbnail with --split-chapters is broken https://github.com/yt-dlp/yt-dlp/issues/6225
 IF "%CropThumb%"=="1" (
-SET    Thumbnail= --no-embed-thumbnail --write-thumbnail --exec "after_move:\"%FFMPEG_PATH%\" -v quiet -i \"%TARGET_FOLDER%\%%^^^(title^^^)s\cover.webp\" -y -c:v %FFMPEG_THUMB_FORMAT% -q:v %THUMB_COMPRESS% -vf crop=\"'if^^^(gt^^^(ih,iw^^^),iw,ih^^^)':'if^^^(gt^^^(iw,ih^^^),ih,iw^^^)'\" \"%TARGET_FOLDER%\%%^^^(title^^^)s\cover.%THUMB_FORMAT%\"" --exec "after_move:del /q \"%TARGET_FOLDER%\%%^^^(title^^^)s\cover.webp\""
+SET    Thumbnail= --no-embed-thumbnail --write-thumbnail --exec "after_move:\"%FFMPEG_PATH%\" -v quiet -i \"%TARGET_FOLDER%\%%^^^(title^^^)s\cover.webp\" -y -c:v %FFMPEG_THUMB_FORMAT% -q:v %THUMB_COMPRESS% -vf \"crop='if^^^(gt^^^(ih,iw^^^),iw,ih^^^)':'if^^^(gt^^^(iw,ih^^^),ih,iw^^^)'\" \"%TARGET_FOLDER%\%%^^^(title^^^)s\cover.%THUMB_FORMAT%\"" --exec "after_move:del /q \"%TARGET_FOLDER%\%%^^^(title^^^)s\cover.webp\""
 ) ELSE (
 SET    Thumbnail= --no-embed-thumbnail --write-thumbnail --convert-thumbnail %THUMB_FORMAT% --postprocessor-args "ThumbnailsConvertor:-q:v %THUMB_COMPRESS%"
 )
@@ -2208,25 +2206,25 @@ SET       Format= --extract-audio --format "46/45/44/43"
 ) ELSE (IF "%CustomFormat-mp3%"=="1" (
 SET       Format= --extract-audio --format "ba[acodec^=mp3]/b"
 ) ELSE (IF "%CustomFormat-m4a%"=="2" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -ac 2 -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -ac 2 -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1" --post-overwrites
 ) ELSE (IF "%CustomFormat-opus%"=="2" (
 SET       Format= --extract-audio --format "338/774/251/250/249"
 ) ELSE (IF "%CustomFormat-m4a%"=="3" (
 SET       Format= --extract-audio --format "258/380/327/256/141/38/22/140/37/59/34/35/59/78/18"
 ) ELSE (IF "%CustomFormat-m4a%"=="4" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -ac 2 -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1 -af \"compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -ac 2 -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1 -af \"compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%CustomFormat-opus%"=="3" (
-SET       Format= --extract-audio --format "338/774/251/250/249" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -threads 0 -b:a %AUDIO_BITRATE%k -c:a libopus -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "338/774/251/250/249" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -threads 0 -b:a %AUDIO_BITRATE%k -c:a libopus -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%CustomFormat-opus%"=="4" (
 SET       Format= --extract-audio --format "bestaudio[acodec^=opus]/bestaudio[container*=dash]/bestaudio"
 ) ELSE (IF "%CustomFormat-m4a%"=="5" (
-SET       Format= --format "258/380/327/256/141/38/22/140/37/59/34/35/59/78/18" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-vn -y -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1 -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --format "258/380/327/256/141/38/22/140/37/59/34/35/59/78/18" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-vn -y -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1 -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="6" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -ac 2 -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -ac 2 -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1" --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="7" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -ac 2 -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1 -af \"compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -ac 2 -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1 -af \"compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="8" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1 -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1 -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%BestAudio%"=="1" (
 SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43"
 ) ELSE (
@@ -2249,13 +2247,9 @@ SET   PreProcess= --parse-metadata "title:%%(artist)s - %%(album)s" --parse-meta
 SET  PostProcess= --no-keep-video --embed-metadata --no-embed-chapters --compat-options no-attach-info-json --exec "after_move:del /q %%(filepath,_filename|)q"
 IF NOT DEFINED use_pl_replaygain (
 SET   ReplayGain=
-) ELSE (IF "%ReplayGainPreset%"=="1" (
-SET   ReplayGain= --use-postprocessor ReplayGain:when=after_move
-) ELSE (IF "%ReplayGainPreset%"=="2" (
-SET   ReplayGain= --use-postprocessor ReplayGain:when=playlist
-) ELSE (IF "%ReplayGainPreset%"=="3" (
-SET   ReplayGain= --use-postprocessor "ReplayGain:when=playlist;no_album=true"
-))))
+) ELSE (
+SET   ReplayGain= --use-postprocessor ReplayGain:when=pre_process
+)
 SET     Duration=
 SET  Date_Filter=
 :: setting variables for continue menu
@@ -2325,7 +2319,7 @@ SET     Download= --limit-rate %SPEED_LIMIT% --concurrent-fragments %THREADS%
 SET Sponsorblock= --no-sponsorblock
 SET   FileSystem= --cache-dir "%YTDLP_CACHE_DIR%" --no-mtime --ffmpeg-location "%FFMPEG_PATH%"
 IF "%CropThumb%"=="1" (
-SET    Thumbnail= --embed-thumbnail --postprocessor-args "ThumbnailsConvertor+ffmpeg_o: -c:v %FFMPEG_THUMB_FORMAT% -q:v %THUMB_COMPRESS% -vf crop=\"'if^^^(gt^^^(ih,iw^^^),iw,ih^^^)':'if^^^(gt^^^(iw,ih^^^),ih,iw^^^)'\""
+SET    Thumbnail= --embed-thumbnail --postprocessor-args "ThumbnailsConvertor+ffmpeg_o: -c:v %FFMPEG_THUMB_FORMAT% -q:v %THUMB_COMPRESS% -vf \"crop='if^^^(gt^^^(ih,iw^^^),iw,ih^^^)':'if^^^(gt^^^(iw,ih^^^),ih,iw^^^)'\""
 ) ELSE (
 SET    Thumbnail= --embed-thumbnail --convert-thumbnail %THUMB_FORMAT% --postprocessor-args "ThumbnailsConvertor:-q:v %THUMB_COMPRESS%"
 )
@@ -2344,25 +2338,25 @@ SET       Format= --extract-audio --format "46/45/44/43"
 ) ELSE (IF "%CustomFormat-mp3%"=="1" (
 SET       Format= --extract-audio --format "ba[acodec^=mp3]/b"
 ) ELSE (IF "%CustomFormat-m4a%"=="2" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -ac 2 -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -ac 2 -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1" --post-overwrites
 ) ELSE (IF "%CustomFormat-opus%"=="2" (
 SET       Format= --extract-audio --format "338/774/251/250/249"
 ) ELSE (IF "%CustomFormat-m4a%"=="3" (
 SET       Format= --extract-audio --format "258/380/327/256/141/38/22/140/37/59/34/35/59/78/18"
 ) ELSE (IF "%CustomFormat-m4a%"=="4" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -ac 2 -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1 -af \"compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -ac 2 -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1 -af \"compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%CustomFormat-opus%"=="3" (
-SET       Format= --extract-audio --format "338/774/251/250/249" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -threads 0 -b:a %AUDIO_BITRATE%k -c:a libopus -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "338/774/251/250/249" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -threads 0 -b:a %AUDIO_BITRATE%k -c:a libopus -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%CustomFormat-opus%"=="4" (
 SET       Format= --extract-audio --format "bestaudio[acodec^=opus]/bestaudio[container*=dash]/bestaudio"
 ) ELSE (IF "%CustomFormat-m4a%"=="5" (
-SET       Format= --format "258/380/327/256/141/38/22/140/37/59/34/35/59/78/18" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1 -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --format "258/380/327/256/141/38/22/140/37/59/34/35/59/78/18" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1 -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="6" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -ac 2 -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -ac 2 -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1" --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="7" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -ac 2 -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1 -af \"compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -ac 2 -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1 -af \"compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="8" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1 -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1 -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%BestAudio%"=="1" (
 SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43"
 ) ELSE (
@@ -2398,7 +2392,9 @@ SET   ReplayGain= --use-postprocessor ReplayGain:when=after_move
 SET   ReplayGain= --use-postprocessor ReplayGain:when=playlist
 ) ELSE (IF "%ReplayGainPreset%"=="3" (
 SET   ReplayGain= --use-postprocessor "ReplayGain:when=playlist;no_album=true"
-))))
+) ELSE (IF "%ReplayGainPreset%"=="4" (
+SET   ReplayGain= --use-postprocessor ReplayGain:when=pre_process
+)))))
 IF NOT DEFINED duration_filter (
 SET     Duration=
 ) ELSE (IF "%duration_filter%"=="1" (
@@ -2466,6 +2462,9 @@ SET Downloaded-Video=& SET Downloaded-Audio=1& SET Downloaded-Manual=& SET Downl
 :doYTDL-audio-preset-3
 :: this is an experiment to get an approximate playlist creation date
 :: i'm getting the earliest date of all uploaded videos in it and set it to variable
+IF "%VariousArtists%"=="1" (
+SET  OutTemplate= --output "%TARGET_FOLDER%\%%(playlist_uploader)s\%%(playlist_title,playlist,album|)s\%%(meta_track_number,playlist_index,playlist_autonumber)02d. %%(artist,artists,creator,uploader)s - %%(title)s.%%(ext)s"
+) ELSE (IF "%Album%"=="1" (
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  Getting the approximate playlist/album creation DATE...
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -2475,12 +2474,9 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Approximate DATE is %Cyan-s%%playlist_date%%ColorOff%
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 2 >nul
-IF "%VariousArtists%"=="1" (
-SET  OutTemplate= --output "%TARGET_FOLDER%\%%(uploader)s\%%(album,playlist_title,playlist|)s\%%(meta_track_number,playlist_index,playlist_autonumber)02d. %%(artist,artists,creator,uploader)s - %%(title)s.%%(ext)s"
-) ELSE (IF "%Album%"=="1" (
-SET  OutTemplate= --output "%TARGET_FOLDER%\%%(uploader)s\%%(%Cyan-s%%playlist_date%%ColorOff%,release_year,release_date>%%Y,upload_date>%%Y)s - %%(album,playlist_title,playlist|)s\%%(meta_track_number,playlist_index,playlist_autonumber)02d. %%(title)s.%%(ext)s" 
+SET  OutTemplate= --output "%TARGET_FOLDER%\%%(playlist_uploader)s\%%(%Cyan-s%%playlist_date%%ColorOff%,release_year,release_date>%%Y,upload_date>%%Y)s - %%(album,playlist_title,playlist|)s\%%(meta_track_number,playlist_index,playlist_autonumber)02d. %%(title)s.%%(ext)s" 
 ) ELSE (
-SET  OutTemplate= --output "%TARGET_FOLDER%\%%(uploader)s\%%(album,playlist_title,playlist|)s\%%(meta_track_number,playlist_index,playlist_autonumber)02d. %%(title)s.%%(ext)s" 
+SET  OutTemplate= --output "%TARGET_FOLDER%\%%(playlist_uploader)s\%%(album,playlist_title,playlist|)s\%%(meta_track_number,playlist_index,playlist_autonumber)02d. %%(title)s.%%(ext)s" 
 ))
 IF NOT DEFINED stop_on_error (
 SET      Options= --ignore-errors --ignore-config
@@ -2534,7 +2530,7 @@ SET     Download= --limit-rate %SPEED_LIMIT% --concurrent-fragments %THREADS%
 SET Sponsorblock= --no-sponsorblock
 SET   FileSystem= --cache-dir "%YTDLP_CACHE_DIR%" --no-mtime --ffmpeg-location "%FFMPEG_PATH%"
 IF "%CropThumb%"=="1" (
-SET    Thumbnail= --embed-thumbnail --postprocessor-args "ThumbnailsConvertor+ffmpeg_o: -c:v %FFMPEG_THUMB_FORMAT% -q:v %THUMB_COMPRESS% -vf crop=\"'if^^^(gt^^^(ih,iw^^^),iw,ih^^^)':'if^^^(gt^^^(iw,ih^^^),ih,iw^^^)'\""
+SET    Thumbnail= --embed-thumbnail --postprocessor-args "ThumbnailsConvertor+ffmpeg_o: -c:v %FFMPEG_THUMB_FORMAT% -q:v %THUMB_COMPRESS% -vf \"crop='if^^^(gt^^^(ih,iw^^^),iw,ih^^^)':'if^^^(gt^^^(iw,ih^^^),ih,iw^^^)'\""
 ) ELSE (
 SET    Thumbnail= --embed-thumbnail --convert-thumbnail %THUMB_FORMAT% --postprocessor-args "ThumbnailsConvertor:-q:v %THUMB_COMPRESS%"
 )
@@ -2553,25 +2549,25 @@ SET       Format= --extract-audio --format "46/45/44/43"
 ) ELSE (IF "%CustomFormat-mp3%"=="1" (
 SET       Format= --extract-audio --format "ba[acodec^=mp3]/b"
 ) ELSE (IF "%CustomFormat-m4a%"=="2" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -ac 2 -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -ac 2 -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1" --post-overwrites
 ) ELSE (IF "%CustomFormat-opus%"=="2" (
 SET       Format= --extract-audio --format "338/774/251/250/249"
 ) ELSE (IF "%CustomFormat-m4a%"=="3" (
 SET       Format= --extract-audio --format "258/380/327/256/141/38/22/140/37/59/34/35/59/78/18"
 ) ELSE (IF "%CustomFormat-m4a%"=="4" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -ac 2 -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1 -af \"compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -ac 2 -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1 -af \"compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%CustomFormat-opus%"=="3" (
-SET       Format= --extract-audio --format "338/774/251/250/249" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -threads 0 -b:a %AUDIO_BITRATE%k -c:a libopus -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "338/774/251/250/249" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -threads 0 -b:a %AUDIO_BITRATE%k -c:a libopus -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%CustomFormat-opus%"=="4" (
 SET       Format= --extract-audio --format "bestaudio[acodec^=opus]/bestaudio[container*=dash]/bestaudio"
 ) ELSE (IF "%CustomFormat-m4a%"=="5" (
-SET       Format= --format "258/380/327/256/141/38/22/140/37/59/34/35/59/78/18" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-vn -y -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1 -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --format "258/380/327/256/141/38/22/140/37/59/34/35/59/78/18" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-vn -y -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1 -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="6" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -ac 2 -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -ac 2 -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1" --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="7" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -ac 2 -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1 -af \"compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -ac 2 -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1 -af \"compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="8" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1 -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1 -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%BestAudio%"=="1" (
 SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43"
 ) ELSE (
@@ -2590,7 +2586,7 @@ SET    AdobePass= --audio-multistreams --merge-output-format mkv --use-extractor
 SET    AdobePass=
 )
 IF "%VariousArtists%"=="1" (
-SET   PreProcess= --parse-metadata "title:%%(artist)s - %%(title)s" --parse-metadata "%%(epoch>%%Y-%%m-%%d)s:%%(meta_download_date)s" --parse-metadata "%%(album,playlist_title)s:%%(meta_album)s" --parse-metadata "%%(average_rating)s:%%(meta_rating)s" --parse-metadata "%%(composer,composers)s:%%(meta_composer)s" --parse-metadata "%%(disc_number)s:%%(meta_disc)s" --parse-metadata "%%(dislike_count)s:%%(meta_dislikes)s" --parse-metadata "%%(genre,genres)s:%%(meta_genre)s" --parse-metadata "%%(like_count)s:%%(meta_likes)s" --parse-metadata "%%(playlist_index,track_number|01)s:%%(meta_track)s" --parse-metadata "%%(release_date>%%Y-%%m-%%d,release_year,upload_date>%%Y-%%m-%%d)s:%%(meta_date)s" --parse-metadata "%%(view_count)s:%%(meta_views)s" --parse-metadata ":(?P<meta_longdescription>)" --parse-metadata ":(?P<meta_synopsis>)" --parse-metadata ":(?P<meta_encodersettings>)" --parse-metadata ":(?P<meta_purl>)" --parse-metadata "webpage_url:%%(meta_www)s" --replace-in-metadata meta_album_artist "^.*$" "Various Artists" --replace-in-metadata meta_date "^NA$" "" --replace-in-metadata meta_rating "^NA$" "" --replace-in-metadata meta_views "^NA$" "" --replace-in-metadata meta_likes "^NA$" "" --replace-in-metadata meta_dislikes "^NA$" "" --replace-in-metadata meta_disc "^NA$" "" --replace-in-metadata meta_encodersettings "^.*$" "" --replace-in-metadata meta_composer "^NA$" "" --replace-in-metadata meta_album "^NA$" "" --replace-in-metadata meta_genre "^NA$" "" --replace-in-metadata title "/" "⁄" --replace-in-metadata title ":" "꞉" --replace-in-metadata album "/" "⁄" --replace-in-metadata album ":" "꞉"
+SET   PreProcess= --parse-metadata "title:%%(artist)s - %%(title)s" --parse-metadata "%%(epoch>%%Y-%%m-%%d)s:%%(meta_download_date)s" --parse-metadata "%%(album,playlist_title)s:%%(meta_album)s" --parse-metadata "album_artist:Various Artists" --parse-metadata "%%(average_rating)s:%%(meta_rating)s" --parse-metadata "%%(composer,composers)s:%%(meta_composer)s" --parse-metadata "%%(disc_number)s:%%(meta_disc)s" --parse-metadata "%%(dislike_count)s:%%(meta_dislikes)s" --parse-metadata "%%(genre,genres)s:%%(meta_genre)s" --parse-metadata "%%(like_count)s:%%(meta_likes)s" --parse-metadata "%%(playlist_index,track_number|01)s:%%(meta_track)s" --parse-metadata "%%(release_date>%%Y-%%m-%%d,release_year,upload_date>%%Y-%%m-%%d)s:%%(meta_date)s" --parse-metadata "%%(view_count)s:%%(meta_views)s" --parse-metadata ":(?P<meta_longdescription>)" --parse-metadata ":(?P<meta_synopsis>)" --parse-metadata ":(?P<meta_encodersettings>)" --parse-metadata ":(?P<meta_purl>)" --parse-metadata "webpage_url:%%(meta_www)s" --replace-in-metadata meta_album_artist "^.*$" "Various Artists" --replace-in-metadata meta_date "^NA$" "" --replace-in-metadata meta_rating "^NA$" "" --replace-in-metadata meta_views "^NA$" "" --replace-in-metadata meta_likes "^NA$" "" --replace-in-metadata meta_dislikes "^NA$" "" --replace-in-metadata meta_disc "^NA$" "" --replace-in-metadata meta_encodersettings "^.*$" "" --replace-in-metadata meta_composer "^NA$" "" --replace-in-metadata meta_album "^NA$" "" --replace-in-metadata meta_genre "^NA$" "" --replace-in-metadata title "/" "⁄" --replace-in-metadata title ":" "꞉" --replace-in-metadata album "/" "⁄" --replace-in-metadata album ":" "꞉"
 ) ELSE (
 SET   PreProcess= --parse-metadata "%%(epoch>%%Y-%%m-%%d)s:%%(meta_download_date)s" --parse-metadata "%%(album,playlist_title)s:%%(meta_album)s" --parse-metadata "%%(album_artist,album_artists,uploader)s:%%(meta_album_artist)s" --parse-metadata "%%(artist,artists.0,creator,uploader)s:%%(meta_artist)s" --parse-metadata "%%(average_rating)s:%%(meta_rating)s" --parse-metadata "%%(composer,composers)s:%%(meta_composer)s" --parse-metadata "%%(disc_number)s:%%(meta_disc)s" --parse-metadata "%%(dislike_count)s:%%(meta_dislikes)s" --parse-metadata "%%(genre,genres)s:%%(meta_genre)s" --parse-metadata "%%(like_count)s:%%(meta_likes)s" --parse-metadata "%%(playlist_index,track_number|01)s:%%(meta_track)s" --parse-metadata "%%(release_date>%%Y-%%m-%%d,release_year,upload_date>%%Y-%%m-%%d)s:%%(meta_date)s" --parse-metadata "%%(view_count)s:%%(meta_views)s" --parse-metadata ":(?P<meta_longdescription>)" --parse-metadata ":(?P<meta_synopsis>)" --parse-metadata ":(?P<meta_encodersettings>)" --parse-metadata ":(?P<meta_purl>)" --parse-metadata "webpage_url:%%(meta_www)s" --replace-in-metadata meta_album_artist " - Topic" "" --replace-in-metadata meta_date "^NA$" "" --replace-in-metadata meta_rating "^NA$" "" --replace-in-metadata meta_views "^NA$" "" --replace-in-metadata meta_likes "^NA$" "" --replace-in-metadata meta_dislikes "^NA$" "" --replace-in-metadata meta_disc "^NA$" "" --replace-in-metadata meta_encodersettings "^.*$" "" --replace-in-metadata meta_composer "^NA$" "" --replace-in-metadata meta_album "^NA$" "" --replace-in-metadata meta_genre "^NA$" "" --replace-in-metadata title "/" "⁄" --replace-in-metadata title ":" "꞉" --replace-in-metadata album "/" "⁄" --replace-in-metadata album ":" "꞉"
 )
@@ -2603,7 +2599,9 @@ SET   ReplayGain= --use-postprocessor ReplayGain:when=after_move
 SET   ReplayGain= --use-postprocessor ReplayGain:when=playlist
 ) ELSE (IF "%ReplayGainPreset%"=="3" (
 SET   ReplayGain= --use-postprocessor "ReplayGain:when=playlist;no_album=true"
-))))
+) ELSE (IF "%ReplayGainPreset%"=="4" (
+SET   ReplayGain= --use-postprocessor ReplayGain:when=pre_process
+)))))
 IF NOT DEFINED duration_filter (
 SET     Duration=
 ) ELSE (IF "%duration_filter%"=="1" (
@@ -2673,12 +2671,12 @@ SET  OutTemplate= --output "%TARGET_FOLDER%\%%(uploader)s\%%(artist,artists.0,cr
 SET      Options= --ignore-errors --ignore-config
 SET      Network= --add-headers "User-Agent:%USER_AGENT%"
 SET  GeoRestrict= --xff "%GEO-BYPASS%"
-SET       Select= --no-download-archive --no-playlist --compat-options no-youtube-unavailable-videos
+SET       Select= --download-archive "%ARCHIVE_PATH%" --no-playlist --compat-options no-youtube-unavailable-videos
 SET     Download= --limit-rate %SPEED_LIMIT% --concurrent-fragments %THREADS%
 SET Sponsorblock= --no-sponsorblock
 SET   FileSystem= --cache-dir "%YTDLP_CACHE_DIR%" --no-mtime --ffmpeg-location "%FFMPEG_PATH%"
-SET    Thumbnail= --embed-thumbnail --postprocessor-args "ThumbnailsConvertor+ffmpeg_o: -c:v %FFMPEG_THUMB_FORMAT% -q:v %THUMB_COMPRESS% -vf crop=\"'if^^^(gt^^^(ih,iw^^^),iw,ih^^^)':'if^^^(gt^^^(iw,ih^^^),ih,iw^^^)'\""
-SET    Verbosity= --color always --console-title --progress --progress-template ["download] [Progress":" %%(progress._percent_str)s, Speed: %%(progress._speed_str)s, Elapsed: %%(progress._elapsed_str)s, Time Remaining: %%(progress._eta_str|0)s/s"]
+SET    Thumbnail= --embed-thumbnail --postprocessor-args "ThumbnailsConvertor+ffmpeg_o: -c:v %FFMPEG_THUMB_FORMAT% -q:v %THUMB_COMPRESS% -vf \"crop='if^^^(gt^^^(ih,iw^^^),iw,ih^^^)':'if^^^(gt^^^(iw,ih^^^),ih,iw^^^)'\""
+SET    Verbosity= --color always --newline --console-title --progress --progress-template ["download] [Progress":" %%(progress._percent_str)s, Speed: %%(progress._speed_str)s, Elapsed: %%(progress._elapsed_str)s, Time Remaining: %%(progress._eta_str|0)s/s"]
 SET  WorkArounds=
 SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43"
 SET     Subtitle=
@@ -2750,7 +2748,7 @@ SET     Download= --limit-rate %SPEED_LIMIT% --concurrent-fragments %THREADS%
 SET Sponsorblock= --sponsorblock-mark %SPONSORBLOCK_OPT% --sponsorblock-remove %SPONSORBLOCK_OPT%
 SET   FileSystem= --cache-dir "%YTDLP_CACHE_DIR%" --no-mtime --ffmpeg-location "%FFMPEG_PATH%"
 IF "%CropThumb%"=="1" (
-SET    Thumbnail= --no-embed-thumbnail --write-thumbnail --exec "after_move:\"%FFMPEG_PATH%\" -v quiet -i \"%TARGET_FOLDER%\%%^^^(title^^^)s\cover.webp\" -y -c:v %FFMPEG_THUMB_FORMAT% -q:v %THUMB_COMPRESS% -vf crop=\"'if^^^(gt^^^(ih,iw^^^),iw,ih^^^)':'if^^^(gt^^^(iw,ih^^^),ih,iw^^^)'\" \"%TARGET_FOLDER%\%%^^^(title^^^)s\cover.%THUMB_FORMAT%\"" --exec "after_move:del /q \"%TARGET_FOLDER%\%%^^^(title^^^)s\cover.webp\""
+SET    Thumbnail= --no-embed-thumbnail --write-thumbnail --exec "after_move:\"%FFMPEG_PATH%\" -v quiet -i \"%TARGET_FOLDER%\%%^^^(title^^^)s\cover.webp\" -y -c:v %FFMPEG_THUMB_FORMAT% -q:v %THUMB_COMPRESS% -vf \"crop='if^^^(gt^^^(ih,iw^^^),iw,ih^^^)':'if^^^(gt^^^(iw,ih^^^),ih,iw^^^)'\" \"%TARGET_FOLDER%\%%^^^(title^^^)s\cover.%THUMB_FORMAT%\"" --exec "after_move:del /q \"%TARGET_FOLDER%\%%^^^(title^^^)s\cover.webp\""
 ) ELSE (
 SET    Thumbnail= --no-embed-thumbnail --write-thumbnail --convert-thumbnail %THUMB_FORMAT% --postprocessor-args "ThumbnailsConvertor:-q:v %THUMB_COMPRESS%"
 )
@@ -2856,7 +2854,7 @@ SET     Download= --limit-rate %SPEED_LIMIT% --concurrent-fragments %THREADS%
 SET Sponsorblock= --sponsorblock-mark %SPONSORBLOCK_OPT% --sponsorblock-remove %SPONSORBLOCK_OPT%
 SET   FileSystem= --cache-dir "%YTDLP_CACHE_DIR%" --no-mtime --ffmpeg-location "%FFMPEG_PATH%"
 IF "%CropThumb%"=="1" (
-SET    Thumbnail= --embed-thumbnail --postprocessor-args "ThumbnailsConvertor+ffmpeg_o: -c:v %FFMPEG_THUMB_FORMAT% -q:v %THUMB_COMPRESS% -vf crop=\"'if^^^(gt^^^(ih,iw^^^),iw,ih^^^)':'if^^^(gt^^^(iw,ih^^^),ih,iw^^^)'\""
+SET    Thumbnail= --embed-thumbnail --postprocessor-args "ThumbnailsConvertor+ffmpeg_o: -c:v %FFMPEG_THUMB_FORMAT% -q:v %THUMB_COMPRESS% -vf \"crop='if^^^(gt^^^(ih,iw^^^),iw,ih^^^)':'if^^^(gt^^^(iw,ih^^^),ih,iw^^^)'\""
 ) ELSE (
 SET    Thumbnail= --embed-thumbnail --convert-thumbnail %THUMB_FORMAT% --postprocessor-args "ThumbnailsConvertor:-q:v %THUMB_COMPRESS%"
 )
@@ -2965,6 +2963,9 @@ SET Downloaded-Video=1& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downl
 
 :: VIDEO PLAYLIST PRESET
 :doYTDL-video-preset-3
+IF "%VariousArtists%"=="1" (
+SET  OutTemplate= --output "%TARGET_FOLDER%\%%(playlist_uploader)s\%%(playlist_title,playlist,album|)s\%%(meta_track_number,playlist_index,playlist_autonumber)02d. %%(artist,artists,creator,uploader)s - %%(title)s.%%(ext)s"
+) ELSE (IF "%Album%"=="1" (
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  Getting the approximate playlist/album creation DATE...
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -2974,7 +2975,10 @@ ECHO ---------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Approximate DATE is %Cyan-s%%playlist_date%%ColorOff%
 ECHO ------------------------------------------------------------------------------------------------------------------------
 timeout /t 2 >nul
-SET  OutTemplate= --output "%TARGET_FOLDER%\%%(uploader)s\%%(%Cyan-s%%playlist_date%%ColorOff%,release_year,release_date>%%Y,upload_date>%%Y)s - %%(album,playlist_title,playlist|)s\%%(meta_track_number,playlist_index,playlist_autonumber)02d. %%(title)s.%%(ext)s"
+SET  OutTemplate= --output "%TARGET_FOLDER%\%%(playlist_uploader)s\%%(%Cyan-s%%playlist_date%%ColorOff%,release_year,release_date>%%Y,upload_date>%%Y)s - %%(album,playlist_title,playlist|)s\%%(meta_track_number,playlist_index,playlist_autonumber)02d. %%(title)s.%%(ext)s" 
+) ELSE (
+SET  OutTemplate= --output "%TARGET_FOLDER%\%%(playlist_uploader)s\%%(album,playlist_title,playlist|)s\%%(meta_track_number,playlist_index,playlist_autonumber)02d. %%(title)s.%%(ext)s" 
+))
 IF NOT DEFINED stop_on_error (
 SET      Options= --ignore-errors --ignore-config
 ) ELSE (IF "%stop_on_error%"=="9" (
@@ -3027,7 +3031,7 @@ SET     Download= --limit-rate %SPEED_LIMIT% --concurrent-fragments %THREADS%
 SET Sponsorblock= --sponsorblock-mark %SPONSORBLOCK_OPT% --sponsorblock-remove %SPONSORBLOCK_OPT%
 SET   FileSystem= --cache-dir "%YTDLP_CACHE_DIR%" --no-mtime --ffmpeg-location "%FFMPEG_PATH%"
 IF "%CropThumb%"=="1" (
-SET    Thumbnail= --embed-thumbnail --postprocessor-args "ThumbnailsConvertor+ffmpeg_o: -c:v %FFMPEG_THUMB_FORMAT% -q:v %THUMB_COMPRESS% -vf crop=\"'if^^^(gt^^^(ih,iw^^^),iw,ih^^^)':'if^^^(gt^^^(iw,ih^^^),ih,iw^^^)'\""
+SET    Thumbnail= --embed-thumbnail --postprocessor-args "ThumbnailsConvertor+ffmpeg_o: -c:v %FFMPEG_THUMB_FORMAT% -q:v %THUMB_COMPRESS% -vf \"crop='if^^^(gt^^^(ih,iw^^^),iw,ih^^^)':'if^^^(gt^^^(iw,ih^^^),ih,iw^^^)'\""
 ) ELSE (
 SET    Thumbnail= --embed-thumbnail --convert-thumbnail %THUMB_FORMAT% --postprocessor-args "ThumbnailsConvertor:-q:v %THUMB_COMPRESS%"
 )
@@ -3068,7 +3072,11 @@ SET    AdobePass= --use-extractors YandexTranslate --audio-multistreams --extrac
 ) ELSE (
 SET    AdobePass=
 )
+IF "%VariousArtists%"=="1" (
+SET   PreProcess= --parse-metadata "title:%%(artist)s - %%(title)s" --parse-metadata "%%(epoch>%%Y-%%m-%%d)s:%%(meta_download_date)s" --parse-metadata "%%(album,playlist_title)s:%%(meta_album)s" --parse-metadata "album_artist:Various Artists" --parse-metadata "%%(average_rating)s:%%(meta_rating)s" --parse-metadata "%%(composer,composers)s:%%(meta_composer)s" --parse-metadata "%%(disc_number)s:%%(meta_disc)s" --parse-metadata "%%(dislike_count)s:%%(meta_dislikes)s" --parse-metadata "%%(genre,genres)s:%%(meta_genre)s" --parse-metadata "%%(like_count)s:%%(meta_likes)s" --parse-metadata "%%(playlist_index,track_number|01)s:%%(meta_track)s" --parse-metadata "%%(release_date>%%Y-%%m-%%d,release_year,upload_date>%%Y-%%m-%%d)s:%%(meta_date)s" --parse-metadata "%%(view_count)s:%%(meta_views)s" --parse-metadata "description:(?s)(?P<meta_comment>.+)" --parse-metadata ":(?P<meta_description>)" --parse-metadata ":(?P<meta_longdescription>)" --parse-metadata ":(?P<meta_synopsis>)" --parse-metadata ":(?P<meta_encodersettings>)" --parse-metadata ":(?P<meta_purl>)" --parse-metadata "webpage_url:%%(meta_www)s" --replace-in-metadata meta_album_artist " - Topic" "" --replace-in-metadata meta_date "^NA$" "" --replace-in-metadata meta_rating "^NA$" "" --replace-in-metadata meta_views "^NA$" "" --replace-in-metadata meta_likes "^NA$" "" --replace-in-metadata meta_dislikes "^NA$" "" --replace-in-metadata meta_disc "^NA$" "" --replace-in-metadata meta_encodersettings "^.*$" "" --replace-in-metadata meta_composer "^NA$" "" --replace-in-metadata meta_album "^NA$" "" --replace-in-metadata meta_genre "^NA$" "" --replace-in-metadata title "/" "⁄" --replace-in-metadata title ":" "꞉" --replace-in-metadata album "/" "⁄" --replace-in-metadata album ":" "꞉"
+) ELSE (
 SET   PreProcess= --parse-metadata "%%(epoch>%%Y-%%m-%%d)s:%%(meta_download_date)s" --parse-metadata "%%(album,playlist_title)s:%%(meta_album)s" --parse-metadata "%%(album_artist,album_artists,uploader)s:%%(meta_album_artist)s" --parse-metadata "%%(artist,artists.0,creator,uploader)s:%%(meta_artist)s" --parse-metadata "%%(average_rating)s:%%(meta_rating)s" --parse-metadata "%%(composer,composers)s:%%(meta_composer)s" --parse-metadata "%%(disc_number)s:%%(meta_disc)s" --parse-metadata "%%(dislike_count)s:%%(meta_dislikes)s" --parse-metadata "%%(genre,genres)s:%%(meta_genre)s" --parse-metadata "%%(like_count)s:%%(meta_likes)s" --parse-metadata "%%(playlist_index,track_number|01)s:%%(meta_track)s" --parse-metadata "%%(release_date>%%Y-%%m-%%d,release_year,upload_date>%%Y-%%m-%%d)s:%%(meta_date)s" --parse-metadata "%%(view_count)s:%%(meta_views)s" --parse-metadata "description:(?s)(?P<meta_comment>.+)" --parse-metadata ":(?P<meta_description>)" --parse-metadata ":(?P<meta_longdescription>)" --parse-metadata ":(?P<meta_synopsis>)" --parse-metadata ":(?P<meta_encodersettings>)" --parse-metadata ":(?P<meta_purl>)" --parse-metadata "webpage_url:%%(meta_www)s" --replace-in-metadata meta_album_artist " - Topic" "" --replace-in-metadata meta_date "^NA$" "" --replace-in-metadata meta_rating "^NA$" "" --replace-in-metadata meta_views "^NA$" "" --replace-in-metadata meta_likes "^NA$" "" --replace-in-metadata meta_dislikes "^NA$" "" --replace-in-metadata meta_disc "^NA$" "" --replace-in-metadata meta_encodersettings "^.*$" "" --replace-in-metadata meta_composer "^NA$" "" --replace-in-metadata meta_album "^NA$" "" --replace-in-metadata meta_genre "^NA$" "" --replace-in-metadata title "/" "⁄" --replace-in-metadata title ":" "꞉" --replace-in-metadata album "/" "⁄" --replace-in-metadata album ":" "꞉"
+)
 SET  PostProcess= --no-keep-video --embed-metadata --embed-chapters --embed-subs --compat-options no-attach-info-json
 SET   ReplayGain=
 IF NOT DEFINED duration_filter (
@@ -3496,7 +3504,7 @@ SET     Download= --limit-rate %SPEED_LIMIT% --concurrent-fragments %THREADS%
 SET Sponsorblock= --no-sponsorblock
 SET   FileSystem= --cache-dir "%YTDLP_CACHE_DIR%" --no-mtime --ffmpeg-location "%FFMPEG_PATH%"
 IF "%CropThumb%"=="1" (
-SET    Thumbnail= --embed-thumbnail --postprocessor-args "ThumbnailsConvertor+ffmpeg_o: -c:v %FFMPEG_THUMB_FORMAT% -q:v %THUMB_COMPRESS% -vf crop=\"'if^^^(gt^^^(ih,iw^^^),iw,ih^^^)':'if^^^(gt^^^(iw,ih^^^),ih,iw^^^)'\""
+SET    Thumbnail= --embed-thumbnail --postprocessor-args "ThumbnailsConvertor+ffmpeg_o: -c:v %FFMPEG_THUMB_FORMAT% -q:v %THUMB_COMPRESS% -vf \"crop='if^^^(gt^^^(ih,iw^^^),iw,ih^^^)':'if^^^(gt^^^(iw,ih^^^),ih,iw^^^)'\""
 ) ELSE (
 SET    Thumbnail= --embed-thumbnail --convert-thumbnail %THUMB_FORMAT% --postprocessor-args "ThumbnailsConvertor:-q:v %THUMB_COMPRESS%"
 )
@@ -3515,25 +3523,25 @@ SET       Format= --extract-audio --format "46/45/44/43"
 ) ELSE (IF "%CustomFormat-mp3%"=="1" (
 SET       Format= --extract-audio --format "ba[acodec^=mp3]/b"
 ) ELSE (IF "%CustomFormat-m4a%"=="2" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -ac 2 -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -ac 2 -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1" --post-overwrites
 ) ELSE (IF "%CustomFormat-opus%"=="2" (
 SET       Format= --extract-audio --format "338/774/251/250/249"
 ) ELSE (IF "%CustomFormat-m4a%"=="3" (
 SET       Format= --extract-audio --format "258/380/327/256/141/38/22/140/37/59/34/35/59/78/18"
 ) ELSE (IF "%CustomFormat-m4a%"=="4" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -ac 2 -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1 -af \"compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -ac 2 -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1 -af \"compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%CustomFormat-opus%"=="3" (
-SET       Format= --extract-audio --format "338/774/251/250/249" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -threads 0 -b:a %AUDIO_BITRATE%k -c:a libopus -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "338/774/251/250/249" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -vn -y -threads 0 -b:a %AUDIO_BITRATE%k -c:a libopus -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%CustomFormat-opus%"=="4" (
 SET       Format= --extract-audio --format "bestaudio[acodec^=opus]/bestaudio[container*=dash]/bestaudio"
 ) ELSE (IF "%CustomFormat-m4a%"=="5" (
-SET       Format= --format "258/380/327/256/141/38/22/140/37/59/34/35/59/78/18" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-vn -y -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1 -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --format "258/380/327/256/141/38/22/140/37/59/34/35/59/78/18" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-vn -y -threads 0 -ar %AUDIO_SAMPLING_RATE% -c:a libfdk_aac -vbr %AudioQuality% -cutoff %CUTOFF% -afterburner 1 -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="6" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -ac 2 -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -ac 2 -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1" --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="7" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -ac 2 -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1 -af \"compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -ac 2 -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1 -af \"compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%CustomFormat-m4a%"=="8" (
-SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1 -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --force-overwrites --post-overwrites
+SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43" --audio-format %AudioFormat% --postprocessor-args "ExtractAudio:-v quiet -y -vn -c:a aac_at %aac-at-param-1% %aac-at-param-2% %aac-at-param-3% %aac-at-param-4% %aac-at-param-5% -cutoff %CUTOFF% -afterburner 1 -af \"pan=stereo^^^|c0=0.5*c2+0.707*c0+0.707*c4+0.5*c3^^^|c1=0.5*c2+0.707*c1+0.707*c5+0.5*c3,compand=attacks=0:points=-80/-169 -54/-80 -49.5/-64.6 -41.1/-41.1 -25.8/-15 -10.8/-4.5 0/0 20/8.3,firequalizer=gain='cubic_interpolate^^^(f^^^)':delay=0.027:accuracy=1:wfunc=hann:gain_entry='entry^^^(31,%VOLUME_GAIN%^^^);entry^^^(40,%VOLUME_GAIN%^^^);entry^^^(41,%VOLUME_GAIN%^^^);entry^^^(50,%VOLUME_GAIN%^^^);entry^^^(100,%VOLUME_GAIN%^^^);entry^^^(200,%VOLUME_GAIN%^^^);entry^^^(392,%VOLUME_GAIN%^^^);entry^^^(523,%VOLUME_GAIN%^^^)':scale=linlog,silenceremove=start_periods=1:stop_periods=-1:start_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:stop_threshold=-%SILENCE_THRESHOLD%dB:detection=peak:start_silence=2:stop_silence=2\"" --post-overwrites
 ) ELSE (IF "%BestAudio%"=="1" (
 SET       Format= --extract-audio --format "773/338/258/328/774/327/256/141/251/22/140/38/37/35/34/59/78/18/250/46/45/44/43"
 ) ELSE (IF "%SectionsAudio%"=="1" (
@@ -3586,41 +3594,41 @@ cls
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Magenta-s%•%ColorOff%  Check Parameters:
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Green-n%›%ColorOff%  Output:%OutTemplate%
-ECHO   %Green-n%›%ColorOff%  Options:%Options%
-ECHO   %Green-n%›%ColorOff%  Network:%Network%
-ECHO   %Green-n%›%ColorOff%  GeoRestrict:%GeoRestrict%
-ECHO   %Green-n%›%ColorOff%  Select:%Select%
-ECHO   %Green-n%›%ColorOff%  Download:%Download%
-ECHO   %Green-n%›%ColorOff%  Sponsorblock:%Sponsorblock%
-ECHO   %Green-n%›%ColorOff%  FileSystem:%FileSystem%
-ECHO   %Green-n%›%ColorOff%  Thumbnail:%Thumbnail%
-ECHO   %Green-n%›%ColorOff%  Verbosity:%Verbosity%
-ECHO   %Green-n%›%ColorOff%  WorkArounds:%WorkArounds%
-ECHO   %Green-n%›%ColorOff%  Format:%Format%
-ECHO   %Green-n%›%ColorOff%  Subtitle:%Subtitle%
-ECHO   %Green-n%›%ColorOff%  Comments:%Comments%
-ECHO   %Green-n%›%ColorOff%  Authenticate:%Authenticate%
-ECHO   %Green-n%›%ColorOff%  AdobePass:%AdobePass%
-ECHO   %Green-n%›%ColorOff%  PreProcess:%PreProcess%
-ECHO   %Green-n%›%ColorOff%  PostProcess:%PostProcess%
+ECHO   %Green-n%› %ColorOff%  Output:%OutTemplate%
+ECHO   %Green-n%› %ColorOff%  Options:%Options%
+ECHO   %Green-n%› %ColorOff%  Network:%Network%
+ECHO   %Green-n%› %ColorOff%  GeoRestrict:%GeoRestrict%
+ECHO   %Green-n%› %ColorOff%  Select:%Select%
+ECHO   %Green-n%› %ColorOff%  Download:%Download%
+ECHO   %Green-n%› %ColorOff%  Sponsorblock:%Sponsorblock%
+ECHO   %Green-n%› %ColorOff%  FileSystem:%FileSystem%
+ECHO   %Green-n%› %ColorOff%  Thumbnail:%Thumbnail%
+ECHO   %Green-n%› %ColorOff%  Verbosity:%Verbosity%
+ECHO   %Green-n%› %ColorOff%  WorkArounds:%WorkArounds%
+ECHO   %Green-n%› %ColorOff%  Format:%Format%
+ECHO   %Green-n%› %ColorOff%  Subtitle:%Subtitle%
+ECHO   %Green-n%› %ColorOff%  Comments:%Comments%
+ECHO   %Green-n%› %ColorOff%  Authenticate:%Authenticate%
+ECHO   %Green-n%› %ColorOff%  AdobePass:%AdobePass%
+ECHO   %Green-n%› %ColorOff%  PreProcess:%PreProcess%
+ECHO   %Green-n%› %ColorOff%  PostProcess:%PostProcess%
 IF DEFINED ReplayGain (
-ECHO   %Green-s%›%ColorOff%  ReplayGain:%ReplayGain%
+ECHO   %Green-s%› %ColorOff%  ReplayGain:%ReplayGain%
 )
 IF DEFINED duration_filter (
-ECHO   %Green-s%›%ColorOff%  Duration:%Duration%
+ECHO   %Green-s%› %ColorOff%  Duration:%Duration%
 )
 IF DEFINED date_filter (
-ECHO   %Green-s%›%ColorOff%  Date:%Date_Filter%
+ECHO   %Green-s%› %ColorOff%  Date:%Date_Filter%
 )
 IF "%DownloadList%"=="1" (
-ECHO   %Green-n%›%ColorOff%  URLs List: "%Underline%%URL%%ColorOff%"
+ECHO   %Green-n%› %ColorOff%  URLs List: "%Underline%%URL%%ColorOff%"
 ) ELSE (
-ECHO   %Green-n%›%ColorOff%  URL: "%Underline%%URL%%ColorOff%"
+ECHO   %Green-n%› %ColorOff%  URL: "%Underline%%URL%%ColorOff%"
 )
 ECHO ------------------------------------------------------------------------------------------------------------------------
 :: test solution to reset without script quiting
-SET /P doYTDL=%BS%  %Magenta-s%›%ColorOff% 'Enter' to download or type 'r' to return to Main Menu: 
+SET /P doYTDL=%BS%  %Cyan-n%› %ColorOff% 'Enter' to download, 'r' to return to Main Menu: 
 IF NOT DEFINED doYTDL GOTO :doYTDL
 IF "!doYTDL!"=="r" SET Downloaded-Video=& SET Downloaded-Audio=& SET Downloaded-Manual=& SET Downloaded-Manual-Single=& SET Downloaded-Comments=& SET Downloaded-Subs=& SET AudioQuality=& SET DownloadList=& SET VideoResolution=& SET VideoFPS=& SET CustomFormatVideo=& SET StreamAudioFormat=& SET CustomFormat-m4a=& SET CustomFormat-mp3=& SET quality_libfdk=& SET CustomFormat-opus=& SET StreamVideoFormat=& SET CommentPreset=& SET SectionsAudio=& SET SectionsVideo=& SET DoSections=& SET Downloaded-Sections=& SET Downloaded-Stream=& SET OnlyNew=& SET Downloaded-Quick=& SET SubsPreset=& SET FormatTitle=& SET CustomFormat-ogg=& SET CropThumb=& SET VariousArtists=& SET quality_simple=& SET CustomFormatAudio=& SET CustomChapters=& SET ReplayGainPreset=& SET BestAudio=& SET aac-at-param-1=& SET aac-at-param-2=& SET aac-at-param-3=& SET aac-at-param-4=& SET aac-at-param-5=& SET CustomCodec=& SET ALBUM=& SET doYTDL=& GOTO :start
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -3639,7 +3647,7 @@ ECHO ---------------------------------------------------------------------------
 :: now we can collect errors with timestamps
 IF "%DownloadList%"=="1" (
 "%YTDLP_PATH%"%OutTemplate%%Options%%Network%%GeoRestrict%%Select%%Download%%Sponsorblock%%FileSystem%%Thumbnail%%Verbosity%%WorkArounds%%Format%%Subtitle%%Comments%%Authenticate%%AdobePass%%PreProcess%%PostProcess%%ReplayGain%%Duration%%Date_Filter% 3>&1 1>&2 2>&3 | "%MOREUTILS_PATH%" ts "[%%T]" >"%LOG_PATH%"
-IF "%Downloaded-Sections%"=="1" (
+) ELSE (IF "%Downloaded-Sections%"=="1" (
 "%YTDLP_PATH%"%OutTemplate%%Options%%Network%%GeoRestrict%%Select%%Download%%Sponsorblock%%FileSystem%%Thumbnail%%Verbosity%%WorkArounds%%Format%%Subtitle%%Comments%%Authenticate%%AdobePass%%PreProcess%%PostProcess% "%URL%" 3>&1 1>&2 2>&3 | "%MOREUTILS_PATH%" ts "[%%T]" >"%LOG_PATH%"
 ) ELSE (
 "%YTDLP_PATH%"%OutTemplate%%Options%%Network%%GeoRestrict%%Select%%Download%%Sponsorblock%%FileSystem%%Thumbnail%%Verbosity%%WorkArounds%%Format%%Subtitle%%Comments%%Authenticate%%AdobePass%%PreProcess%%PostProcess%%ReplayGain%%Duration%%Date_Filter% "%URL%" 3>&1 1>&2 2>&3 | "%MOREUTILS_PATH%" ts "[%%T]" >"%LOG_PATH%"
@@ -3647,7 +3655,7 @@ IF "%Downloaded-Sections%"=="1" (
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  COLLECTED ERRORS
 ECHO ------------------------------------------------------------------------------------------------------------------------
-FOR /f "delims=" %%j IN ('type "%LOG_PATH%"') DO ECHO %%j
+IF EXIST "%LOG_PATH%" FOR /f "delims=" %%j IN ('type "%LOG_PATH%"') DO ECHO %%j
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done. Press any key.
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -3659,25 +3667,25 @@ cls
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Magenta-s%•%ColorOff%  Check Parameters:
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Green-n%›%ColorOff%  Output:%OutTemplate%
-ECHO   %Green-n%›%ColorOff%  Options:%Options%
-ECHO   %Green-n%›%ColorOff%  Network:%Network%
-ECHO   %Green-n%›%ColorOff%  GeoRestrict:%GeoRestrict%
-ECHO   %Green-n%›%ColorOff%  Select:%Select%
-ECHO   %Green-n%›%ColorOff%  Download:%Download%
-ECHO   %Green-n%›%ColorOff%  Sponsorblock:%Sponsorblock%
-ECHO   %Green-n%›%ColorOff%  FileSystem:%FileSystem%
-ECHO   %Green-n%›%ColorOff%  Thumbnail:%Thumbnail%
-ECHO   %Green-n%›%ColorOff%  Verbosity:%Verbosity%
-ECHO   %Green-n%›%ColorOff%  WorkArounds:%WorkArounds%
-ECHO   %Green-n%›%ColorOff%  Format:%Format%
-ECHO   %Green-n%›%ColorOff%  Subtitle:%Subtitle%
-ECHO   %Green-n%›%ColorOff%  Comments:%Comments%
-ECHO   %Green-n%›%ColorOff%  Authenticate:%Authenticate%
-ECHO   %Green-n%›%ColorOff%  AdobePass:%AdobePass%
-ECHO   %Green-n%›%ColorOff%  PreProcess:%PreProcess%
-ECHO   %Green-n%›%ColorOff%  PostProcess:%PostProcess%
-ECHO   %Green-n%›%ColorOff%  URL: "%Underline%%URL%%ColorOff%"
+ECHO   %Green-n%› %ColorOff%  Output:%OutTemplate%
+ECHO   %Green-n%› %ColorOff%  Options:%Options%
+ECHO   %Green-n%› %ColorOff%  Network:%Network%
+ECHO   %Green-n%› %ColorOff%  GeoRestrict:%GeoRestrict%
+ECHO   %Green-n%› %ColorOff%  Select:%Select%
+ECHO   %Green-n%› %ColorOff%  Download:%Download%
+ECHO   %Green-n%› %ColorOff%  Sponsorblock:%Sponsorblock%
+ECHO   %Green-n%› %ColorOff%  FileSystem:%FileSystem%
+ECHO   %Green-n%› %ColorOff%  Thumbnail:%Thumbnail%
+ECHO   %Green-n%› %ColorOff%  Verbosity:%Verbosity%
+ECHO   %Green-n%› %ColorOff%  WorkArounds:%WorkArounds%
+ECHO   %Green-n%› %ColorOff%  Format:%Format%
+ECHO   %Green-n%› %ColorOff%  Subtitle:%Subtitle%
+ECHO   %Green-n%› %ColorOff%  Comments:%Comments%
+ECHO   %Green-n%› %ColorOff%  Authenticate:%Authenticate%
+ECHO   %Green-n%› %ColorOff%  AdobePass:%AdobePass%
+ECHO   %Green-n%› %ColorOff%  PreProcess:%PreProcess%
+ECHO   %Green-n%› %ColorOff%  PostProcess:%PostProcess%
+ECHO   %Green-n%› %ColorOff%  URL: "%Underline%%URL%%ColorOff%"
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  STREAMING...
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -3704,7 +3712,7 @@ SET Downloaded-Quick=1
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  COLLECTED ERRORS
 ECHO ------------------------------------------------------------------------------------------------------------------------
-FOR /f "delims=" %%j IN ('type "%LOG_PATH%"') DO ECHO %%j
+IF EXIST "%LOG_PATH%" FOR /f "delims=" %%j IN ('type "%LOG_PATH%"') DO ECHO %%j
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done. Press any key.
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -3714,25 +3722,25 @@ GOTO :continue
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Magenta-s%•%ColorOff%  Check Parameters:
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Green-n%›%ColorOff%  Output:%OutTemplate%
-ECHO   %Green-n%›%ColorOff%  Options:%Options%
-ECHO   %Green-n%›%ColorOff%  Network:%Network%
-ECHO   %Green-n%›%ColorOff%  GeoRestrict:%GeoRestrict%
-ECHO   %Green-n%›%ColorOff%  Select:%Select%
-ECHO   %Green-n%›%ColorOff%  Download:%Download%
-ECHO   %Green-n%›%ColorOff%  Sponsorblock:%Sponsorblock%
-ECHO   %Green-n%›%ColorOff%  FileSystem:%FileSystem%
-ECHO   %Green-n%›%ColorOff%  Thumbnail:%Thumbnail%
-ECHO   %Green-n%›%ColorOff%  Verbosity:%Verbosity%
-ECHO   %Green-n%›%ColorOff%  WorkArounds:%WorkArounds%
-ECHO   %Green-n%›%ColorOff%  Format:%Format%
-ECHO   %Green-n%›%ColorOff%  Subtitle:%Subtitle%
-ECHO   %Green-n%›%ColorOff%  Comments:%Comments%
-ECHO   %Green-n%›%ColorOff%  Authenticate:%Authenticate%
-ECHO   %Green-n%›%ColorOff%  AdobePass:%AdobePass%
-ECHO   %Green-n%›%ColorOff%  PreProcess:%PreProcess%
-ECHO   %Green-n%›%ColorOff%  PostProcess:%PostProcess%
-ECHO   %Green-n%›%ColorOff%  URL: "%Underline%%URL%%ColorOff%"
+ECHO   %Green-n%› %ColorOff%  Output:%OutTemplate%
+ECHO   %Green-n%› %ColorOff%  Options:%Options%
+ECHO   %Green-n%› %ColorOff%  Network:%Network%
+ECHO   %Green-n%› %ColorOff%  GeoRestrict:%GeoRestrict%
+ECHO   %Green-n%› %ColorOff%  Select:%Select%
+ECHO   %Green-n%› %ColorOff%  Download:%Download%
+ECHO   %Green-n%› %ColorOff%  Sponsorblock:%Sponsorblock%
+ECHO   %Green-n%› %ColorOff%  FileSystem:%FileSystem%
+ECHO   %Green-n%› %ColorOff%  Thumbnail:%Thumbnail%
+ECHO   %Green-n%› %ColorOff%  Verbosity:%Verbosity%
+ECHO   %Green-n%› %ColorOff%  WorkArounds:%WorkArounds%
+ECHO   %Green-n%› %ColorOff%  Format:%Format%
+ECHO   %Green-n%› %ColorOff%  Subtitle:%Subtitle%
+ECHO   %Green-n%› %ColorOff%  Comments:%Comments%
+ECHO   %Green-n%› %ColorOff%  Authenticate:%Authenticate%
+ECHO   %Green-n%› %ColorOff%  AdobePass:%AdobePass%
+ECHO   %Green-n%› %ColorOff%  PreProcess:%PreProcess%
+ECHO   %Green-n%› %ColorOff%  PostProcess:%PostProcess%
+ECHO   %Green-n%› %ColorOff%  URL: "%Underline%%URL%%ColorOff%"
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Yellow-s%•%ColorOff%  DOWNLOADING...
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -3742,7 +3750,7 @@ SET Downloaded-Quick=1
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Red-s%•%ColorOff%  COLLECTED ERRORS
 ECHO ------------------------------------------------------------------------------------------------------------------------
-FOR /f "delims=" %%j IN ('type "%LOG_PATH%"') DO ECHO %%j
+IF EXIST "%LOG_PATH%" FOR /f "delims=" %%j IN ('type "%LOG_PATH%"') DO ECHO %%j
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Done. Press any key.
 ECHO ------------------------------------------------------------------------------------------------------------------------
@@ -3772,25 +3780,25 @@ EXIT /B 0
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Magenta-s%•%ColorOff%  Check Parameters:
 ECHO ------------------------------------------------------------------------------------------------------------------------
-ECHO   %Green-n%›%ColorOff%  Output:%OutTemplate%
-ECHO   %Green-n%›%ColorOff%  Options:%Options%
-ECHO   %Green-n%›%ColorOff%  Network:%Network%
-ECHO   %Green-n%›%ColorOff%  GeoRestrict:%GeoRestrict%
-ECHO   %Green-n%›%ColorOff%  Select:%Select%
-ECHO   %Green-n%›%ColorOff%  Download:%Download%
-ECHO   %Green-n%›%ColorOff%  Sponsorblock:%Sponsorblock%
-ECHO   %Green-n%›%ColorOff%  FileSystem:%FileSystem%
-ECHO   %Green-n%›%ColorOff%  Thumbnail:%Thumbnail%
-ECHO   %Green-n%›%ColorOff%  Verbosity:%Verbosity%
-ECHO   %Green-n%›%ColorOff%  WorkArounds:%WorkArounds%
-ECHO   %Green-n%›%ColorOff%  Format:%Format%
-ECHO   %Green-n%›%ColorOff%  Subtitle:%Subtitle%
-ECHO   %Green-n%›%ColorOff%  Comments:%Comments%
-ECHO   %Green-n%›%ColorOff%  Authenticate:%Authenticate%
-ECHO   %Green-n%›%ColorOff%  AdobePass:%AdobePass%
-ECHO   %Green-n%›%ColorOff%  PreProcess:%PreProcess%
-ECHO   %Green-n%›%ColorOff%  PostProcess:%PostProcess%
-ECHO   %Green-n%›%ColorOff%  URL: %Underline%%*%ColorOff%
+ECHO   %Green-n%› %ColorOff%  Output:%OutTemplate%
+ECHO   %Green-n%› %ColorOff%  Options:%Options%
+ECHO   %Green-n%› %ColorOff%  Network:%Network%
+ECHO   %Green-n%› %ColorOff%  GeoRestrict:%GeoRestrict%
+ECHO   %Green-n%› %ColorOff%  Select:%Select%
+ECHO   %Green-n%› %ColorOff%  Download:%Download%
+ECHO   %Green-n%› %ColorOff%  Sponsorblock:%Sponsorblock%
+ECHO   %Green-n%› %ColorOff%  FileSystem:%FileSystem%
+ECHO   %Green-n%› %ColorOff%  Thumbnail:%Thumbnail%
+ECHO   %Green-n%› %ColorOff%  Verbosity:%Verbosity%
+ECHO   %Green-n%› %ColorOff%  WorkArounds:%WorkArounds%
+ECHO   %Green-n%› %ColorOff%  Format:%Format%
+ECHO   %Green-n%› %ColorOff%  Subtitle:%Subtitle%
+ECHO   %Green-n%› %ColorOff%  Comments:%Comments%
+ECHO   %Green-n%› %ColorOff%  Authenticate:%Authenticate%
+ECHO   %Green-n%› %ColorOff%  AdobePass:%AdobePass%
+ECHO   %Green-n%› %ColorOff%  PreProcess:%PreProcess%
+ECHO   %Green-n%› %ColorOff%  PostProcess:%PostProcess%
+ECHO   %Green-n%› %ColorOff%  URL: %Underline%%*%ColorOff%
 ECHO ------------------------------------------------------------------------------------------------------------------------
 ECHO   %Green-s%•%ColorOff%  Press any key to continue
 ECHO ------------------------------------------------------------------------------------------------------------------------
